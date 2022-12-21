@@ -5,12 +5,16 @@ project(Orthodontics)
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTORCC ON)
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
 find_package(Qt5 COMPONENTS Core Widgets REQUIRED)
 find_package(VTK REQUIRED)
 
 file(GLOB INC ${CMAKE_SOURCE_DIR}/src/*.h[pp|xx]?)
 file(GLOB SRC ${CMAKE_SOURCE_DIR}/src/*.c[pp|xx]?)
+file(GLOB UI ${CMAKE_SOURCE_DIR}/src/*.ui)
 
 
 add_library(${PROJECT_NAME})

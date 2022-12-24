@@ -32,6 +32,7 @@ class QOrthodonticsViewWidget : public QVTKOpenGLNativeWidget {
   T *getDataSet(const QString &name) {
     return T::SafeDownCast(getDataSet(name));
   }
+  void addPolyData(const QString &name, vtkPolyData *polyData);
 
  private:
   vtkActor *addPolyDataFromPath(const QString &path);

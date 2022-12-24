@@ -59,6 +59,12 @@ vtkDataSet *QOrthodonticsViewWidget::getDataSet(const QString &name) {
   return mDataBase[name];
 }
 
+void QOrthodonticsViewWidget::addPolyData(const QString &name,
+                                          vtkPolyData *polyData) {
+  mDataBase[name] = polyData;
+  renderPolyData(polyData);
+}
+
 vtkActor *QOrthodonticsViewWidget::addPolyDataFromPath(const QString &path) {
   vtkNew<vtkSTLReader> stlReader;
   stlReader->SetFileName(path.toStdString().c_str());

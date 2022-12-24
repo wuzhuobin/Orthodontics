@@ -12,6 +12,8 @@
 #include "QBridgeVtk.hpp"
 
 // vtk
+#include <vtkClipClosedSurface.h>
+#include <vtkPlaneCollection.h>
 #include <vtkPolyData.h>
 
 void QBridgeVtk::setViewWidget(QOrthodonticsViewWidget* viewWidget) {
@@ -29,6 +31,22 @@ void QBridgeVtk::setupConnection() {
             enableInteractorObserver(mImplicitPlaneWidget2, enabled);
             mImplicitPlaneWidget2->Initialize(lowerPolyData);
           });
+
+  connect(mImplicitPlaneControllerWidget.pushButtonClip, &QPushButton::clicked,
+          [this]() {
+            auto* plane = mImplicitPlaneWidget2->GetImplicitPlane();
+            vtkNew<vtkPlaneCollection> planeCollection;
+            planeCollection->AddItem(plane);
+            auto* lowerPolyData =
+                mViewWidget->getDataSet<vtkPolyData>("Lower+AntagonistScan");
+            vtkNew<vtkClipClosedSurface> clipClosedSurface;
+            clipClosedSurface->SetInputData(lowerPolyData);
+            clipClosedSurface->SetClippingPlanes(planeCollection);
+            clipClosedSurface->Update();
+            mViewWidget->addPolyData("Lower+AntagonistScanClipped",
+                                     clipClosedSurface->GetOutput());
+          });
+
   connect(mWidget->pushButtonSetupContour, &QPushButton::toggled,
           [this](auto enabled) {
             enableInteractorObserver(mContourWidget, enabled);

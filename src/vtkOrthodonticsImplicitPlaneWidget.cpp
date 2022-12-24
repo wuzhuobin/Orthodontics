@@ -24,3 +24,7 @@ void vtkOrthodonticsImplicitPlaneWidget::Initialize(vtkPolyData *data) {
   representation->SetPlaceFactor(1.0);
   representation->PlaceWidget(data->GetBounds());
 }
+
+vtkPlane *vtkOrthodonticsImplicitPlaneWidget::GetImplicitPlane() {
+  return GetImplicitPlaneRepresentation()->GetUnderlyingPlane();
+}

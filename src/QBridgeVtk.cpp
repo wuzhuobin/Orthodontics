@@ -10,3 +10,24 @@
  */
 
 #include "QBridgeVtk.hpp"
+
+#include "QOrthodonticsViewWidget.hpp"
+#include "QOrthodonticsWidget.hpp"
+
+// vtk
+#include <vtkContourWidget.h>
+
+void QBridgeVtk::setViewWidget(QOrthodonticsViewWidget* viewWidget) {
+  mViewWidget = viewWidget;
+}
+
+void QBridgeVtk::setWidget(QOrthodonticsWidget* widget) { mWidget = widget; }
+
+void QBridgeVtk::setupConnection() {
+  connect(mWidget->pushButtonSetupContour, &QPushButton::clicked,
+          [this](auto enabled) {
+            static vtkNew<vtkContourWidget> contourWidget;
+            contourWidget->SetInteractor(mViewWidget->interactor());
+            contourWidget->SetEnabled(enabled);
+          });
+}

@@ -15,9 +15,20 @@
 // qt
 #include <QObject>
 
-class QBridgeVtk : public QObject
-{
-	Q_OBJECT
+class QOrthodonticsViewWidget;
+class QOrthodonticsWidget;
+
+class QBridgeVtk : public QObject {
+  Q_OBJECT
+
+ public:
+  void setViewWidget(QOrthodonticsViewWidget* viewWidget);
+  void setWidget(QOrthodonticsWidget* widget);
+  void setupConnection();
+
+ private:
+  QOrthodonticsViewWidget* mViewWidget;
+  QOrthodonticsWidget* mWidget;
 };
 
-#endif //! Q_BRIDGE_VTK_HPP
+#endif  //! Q_BRIDGE_VTK_HPP

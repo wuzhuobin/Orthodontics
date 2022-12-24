@@ -17,12 +17,11 @@
 // qt
 #include <QWidget>
 
-class QOrthodonticsWidget : public QWidget, Ui::QOrthodonticsWidget
-{
-	Q_OBJECT
+class QOrthodonticsWidget : public QWidget, public Ui::QOrthodonticsWidget {
+  Q_OBJECT
 
-public:
-	explicit QOrthodonticsWidget(QWidget *parent = nullptr);
+ public:
+  explicit QOrthodonticsWidget(QWidget *parent = nullptr);
 };
 
-#endif // !Q_ORTHODONTICS_WIDGET_HPP
+#endif  // !Q_ORTHODONTICS_WIDGET_HPP

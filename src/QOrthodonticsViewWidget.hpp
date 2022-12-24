@@ -9,9 +9,23 @@
  *
  */
 
+#ifndef Q_ORTHODONTICS_VIEW_WIDGET_HPP
+#define Q_ORTHODONTICS_VIEW_WIDGET_HPP
+
 // vtk
 #include <QVTKOpenGLNativeWidget.h>
+class vtkActor;
+class vtkPolyData;
 
 class QOrthodonticsViewWidget : public QVTKOpenGLNativeWidget {
   Q_OBJECT
+
+ public:
+  explicit QOrthodonticsViewWidget(QWidget *parent = nullptr);
+
+ private:
+  vtkActor *addPolyDataFromPath(const std::string &path) const;
+  vtkActor *renderPolyData(vtkPolyData *polyData) const;
 };
+
+#endif  //! Q_ORTHODONTICS_VIEW_WIDGET_HPP

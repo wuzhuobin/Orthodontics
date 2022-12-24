@@ -8,8 +8,9 @@
  * @copyright Copyright (c) 2022
  *
  */
-#include "QOrthodonticsWidget.hpp"
 #include "QBridgeVtk.hpp"
+#include "QOrthodonticsViewWidget.hpp"
+#include "QOrthodonticsWidget.hpp"
 
 // qt
 #include <QApplication>
@@ -17,12 +18,17 @@
 // std
 #include <iostream>
 
-int main(int argc, char *argv[])
-{
-	QApplication app(argc, argv);
-	QBridgeVtk bridge;
-	QOrthodonticsWidget widget;
-	widget.show();
+int main(int argc, char *argv[]) {
+  QApplication app(argc, argv);
+  QOrthodonticsWidget widget;
+  widget.show();
+  QOrthodonticsViewWidget view;
+  view.show();
+  view.resize(1024, 1024);
+  QBridgeVtk bridge;
+  bridge.setViewWidget(&view);
+  bridge.setWidget(&widget);
+  bridge.setupConnection();
 
-	return app.exec();
+  return app.exec();
 }

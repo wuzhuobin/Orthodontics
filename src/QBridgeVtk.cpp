@@ -12,7 +12,6 @@
 #include "QBridgeVtk.hpp"
 
 // vtk
-#include <vtkImplicitPlaneRepresentation.h>
 #include <vtkPolyData.h>
 
 void QBridgeVtk::setViewWidget(QOrthodonticsViewWidget* viewWidget) {
@@ -27,11 +26,8 @@ void QBridgeVtk::setupConnection() {
             mImplicitPlaneControllerWidget.setVisible(enabled);
             auto* lowerPolyData =
                 mViewWidget->getDataSet<vtkPolyData>("Lower+AntagonistScan");
-            mImplicitPlaneWidget2->CreateDefaultRepresentation();
-            auto* rep = mImplicitPlaneWidget2->GetImplicitPlaneRepresentation();
-            rep->SetPlaceFactor(1);
-            rep->PlaceWidget(lowerPolyData->GetBounds());
             enableInteractorObserver(mImplicitPlaneWidget2, enabled);
+            mImplicitPlaneWidget2->Initialize(lowerPolyData);
           });
   connect(mWidget->pushButtonSetupContour, &QPushButton::toggled,
           [this](auto enabled) {

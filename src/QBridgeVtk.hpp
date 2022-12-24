@@ -15,13 +15,13 @@
 #include "QImplicitPlaneControllerWidget.hpp"
 #include "QOrthodonticsViewWidget.hpp"
 #include "QOrthodonticsWidget.hpp"
+#include "vtkOrthodonticsImplicitPlaneWidget.hpp"
 
 // qt
 #include <QObject>
 
 // vtk
 #include <vtkContourWidget.h>
-#include <vtkImplicitPlaneWidget2.h>
 #include <vtkNew.h>
 
 class QBridgeVtk : public QObject {
@@ -38,7 +38,7 @@ class QBridgeVtk : public QObject {
   QOrthodonticsWidget* mWidget;
 
   vtkNew<vtkContourWidget> mContourWidget;
-  vtkNew<vtkImplicitPlaneWidget2> mImplicitPlaneWidget2;
+  vtkNew<vtkOrthodonticsImplicitPlaneWidget> mImplicitPlaneWidget2;
 
   void enableInteractorObserver(vtkInteractorObserver* observer, bool enabled);
 };

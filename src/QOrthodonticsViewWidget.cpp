@@ -34,24 +34,28 @@ QOrthodonticsViewWidget::QOrthodonticsViewWidget(QWidget *parent)
 
   const auto *lowerPath = "C:/ccode/Orthodontics/data/Lower+AntagonistScan.stl";
   auto *lowerActor = addPolyDataFromPath(lowerPath);
-  lowerActor->SetVisibility(false);
-  const auto *upperPath =
-      "C:/ccode/Orthodontics/data/Upper+PreparationScan.stl";
-  auto *upperActor = addPolyDataFromPath(upperPath);
-  upperActor->SetVisibility(false);
-  const auto *lowerClippedPath =
-      "C:/ccode/Orthodontics/data/Lower+AntagonistScanClipped.stl";
+  // lowerActor->SetVisibility(false);
+  // const auto *upperPath =
+  //     "C:/ccode/Orthodontics/data/Upper+PreparationScan.stl";
+  // auto *upperActor = addPolyDataFromPath(upperPath);
+  // upperActor->SetVisibility(false);
+  // const auto *lowerClippedPath =
+  //     "C:/ccode/Orthodontics/data/Lower+AntagonistScanClipped.stl";
 
-  vtkNew<vtkSTLReader> stlReader;
-  stlReader->SetFileName(lowerClippedPath);
-  stlReader->Update();
+  // vtkNew<vtkSTLReader> stlReader;
+  // stlReader->SetFileName(lowerClippedPath);
+  // stlReader->Update();
 
-  vtkNew<vtkFillHolesFilter> fillHolesFilter;
-  fillHolesFilter->SetInputConnection(stlReader->GetOutputPort());
-  fillHolesFilter->SetHoleSize(100);
-  fillHolesFilter->Update();
+  // vtkNew<vtkFillHolesFilter> fillHolesFilter;
+  // fillHolesFilter->SetInputConnection(stlReader->GetOutputPort());
+  // fillHolesFilter->SetHoleSize(100);
+  // fillHolesFilter->Update();
 
-  renderPolyData(fillHolesFilter->GetOutput());
+  // renderPolyData(fillHolesFilter->GetOutput());
+}
+
+vtkDataSet *QOrthodonticsViewWidget::getDataSet(const QString &name) {
+  return mDataBase[name];
 }
 
 vtkActor *QOrthodonticsViewWidget::addPolyDataFromPath(

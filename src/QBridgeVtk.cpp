@@ -15,7 +15,8 @@
 #include "QOrthodonticsWidget.hpp"
 
 // vtk
-#include <vtkContourWidget.h>
+#include <vtkImplicitPlaneRepresentation.h>
+#include <vtkPolyData.h>
 
 void QBridgeVtk::setViewWidget(QOrthodonticsViewWidget* viewWidget) {
   mViewWidget = viewWidget;
@@ -24,10 +25,27 @@ void QBridgeVtk::setViewWidget(QOrthodonticsViewWidget* viewWidget) {
 void QBridgeVtk::setWidget(QOrthodonticsWidget* widget) { mWidget = widget; }
 
 void QBridgeVtk::setupConnection() {
-  connect(mWidget->pushButtonSetupContour, &QPushButton::clicked,
+  connect(mWidget->pushButtonSetupPlane, &QPushButton::toggled,
           [this](auto enabled) {
-            static vtkNew<vtkContourWidget> contourWidget;
-            contourWidget->SetInteractor(mViewWidget->interactor());
-            contourWidget->SetEnabled(enabled);
+            auto* lowerPolyData =
+                mViewWidget->getDataSet<vtkPolyData>("Lower+AntagonistScan");
+            mImplicitPlaneWidget2->CreateDefaultRepresentation();
+            auto* rep = mImplicitPlaneWidget2->GetImplicitPlaneRepresentation();
+            rep->SetPlaceFactor(1);
+            rep->PlaceWidget(lowerPolyData->GetBounds());
+            enableInteractorObserver(mImplicitPlaneWidget2, enabled);
           });
+  connect(mWidget->pushButtonSetupContour, &QPushButton::toggled,
+          [this](auto enabled) {
+            enableInteractorObserver(mContourWidget, enabled);
+          });
+}
+
+void QBridgeVtk::enableInteractorObserver(vtkInteractorObserver* observer,
+                                          bool enabled) {
+  if (observer == nullptr) {
+    return;
+  }
+  observer->SetInteractor(enabled ? mViewWidget->interactor() : nullptr);
+  observer->SetEnabled(enabled);
 }

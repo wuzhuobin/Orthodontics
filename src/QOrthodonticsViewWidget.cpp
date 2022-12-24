@@ -13,7 +13,6 @@
 
 // vtk
 #include <vtkActor.h>
-// #include <vtkFillHolesFilter.h>
 #include <vtkNew.h>
 #include <vtkPolyDataMapper.h>
 #include <vtkRenderer.h>

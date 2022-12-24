@@ -13,9 +13,11 @@
 
 // vtk
 #include <vtkClipClosedSurface.h>
+#include <vtkFillHolesFilter.h>
 #include <vtkPlaneCollection.h>
 #include <vtkPolyData.h>
 #include <vtkProp3D.h>
+#include <vtkRenderWindow.h>
 
 void QBridgeVtk::setViewWidget(QOrthodonticsViewWidget* viewWidget) {
   mViewWidget = viewWidget;
@@ -31,28 +33,50 @@ void QBridgeVtk::setupConnection() {
                 mViewWidget->getDataSet<vtkPolyData>("Lower+AntagonistScan");
             enableInteractorObserver(mImplicitPlaneWidget2, enabled);
             mImplicitPlaneWidget2->Initialize(lowerPolyData);
+
+            mViewWidget->renderWindow()->Render();
           });
 
-  connect(mImplicitPlaneControllerWidget.pushButtonClip, &QPushButton::clicked,
+  connect(
+      mImplicitPlaneControllerWidget.pushButtonClip, &QPushButton::clicked,
+      [this]() {
+        auto* lowerProp3D = mViewWidget->getProp("Lower+AntagonistScan");
+        lowerProp3D->SetVisibility(false);
+        auto* plane = mImplicitPlaneWidget2->GetImplicitPlane();
+        vtkNew<vtkPlaneCollection> planeCollection;
+        planeCollection->AddItem(plane);
+        auto* lowerPolyData =
+            mViewWidget->getDataSet<vtkPolyData>("Lower+AntagonistScan");
+        vtkNew<vtkClipClosedSurface> clipClosedSurface;
+        clipClosedSurface->SetInputData(lowerPolyData);
+        clipClosedSurface->SetClippingPlanes(planeCollection);
+        clipClosedSurface->Update();
+        vtkNew<vtkFillHolesFilter> fillHolesFilter;
+        fillHolesFilter->SetInputConnection(clipClosedSurface->GetOutputPort());
+        fillHolesFilter->SetHoleSize(100);
+        fillHolesFilter->Update();
+        mViewWidget->addPolyData("Lower+AntagonistScanClipped",
+                                 fillHolesFilter->GetOutput());
+
+        mViewWidget->renderWindow()->Render();
+      });
+
+  connect(mImplicitPlaneControllerWidget.pushButtonReset, &QPushButton::clicked,
           [this]() {
             auto* lowerProp3D = mViewWidget->getProp("Lower+AntagonistScan");
-            lowerProp3D->SetVisibility(false);
-            auto* plane = mImplicitPlaneWidget2->GetImplicitPlane();
-            vtkNew<vtkPlaneCollection> planeCollection;
-            planeCollection->AddItem(plane);
-            auto* lowerPolyData =
-                mViewWidget->getDataSet<vtkPolyData>("Lower+AntagonistScan");
-            vtkNew<vtkClipClosedSurface> clipClosedSurface;
-            clipClosedSurface->SetInputData(lowerPolyData);
-            clipClosedSurface->SetClippingPlanes(planeCollection);
-            clipClosedSurface->Update();
-            mViewWidget->addPolyData("Lower+AntagonistScanClipped",
-                                     clipClosedSurface->GetOutput());
+            lowerProp3D->SetVisibility(true);
+            auto* lowerClippedProp3D =
+                mViewWidget->getProp("Lower+AntagonistScanClipped");
+            lowerClippedProp3D->SetVisibility(false);
+
+            mViewWidget->renderWindow()->Render();
           });
 
   connect(mWidget->pushButtonSetupContour, &QPushButton::toggled,
           [this](auto enabled) {
             enableInteractorObserver(mContourWidget, enabled);
+
+            mViewWidget->renderWindow()->Render();
           });
 }
 

@@ -34,7 +34,7 @@ class QOrthodonticsViewWidget : public QVTKOpenGLNativeWidget {
   }
 
  private:
-  vtkActor *addPolyDataFromPath(const std::string &path) const;
+  vtkActor *addPolyDataFromPath(const QString &path);
   vtkActor *renderPolyData(vtkPolyData *polyData) const;
 
   using DataBase = QMap<QString, vtkSmartPointer<vtkDataSet>>;

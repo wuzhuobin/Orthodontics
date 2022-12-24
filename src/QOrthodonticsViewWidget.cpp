@@ -13,7 +13,7 @@
 
 // vtk
 #include <vtkActor.h>
-#include <vtkFillHolesFilter.h>
+// #include <vtkFillHolesFilter.h>
 #include <vtkNew.h>
 #include <vtkPolyDataMapper.h>
 #include <vtkRenderer.h>
@@ -26,6 +26,7 @@
 
 // qt
 #include <QDebug>
+#include <QFileInfo>
 
 QOrthodonticsViewWidget::QOrthodonticsViewWidget(QWidget *parent)
     : QVTKOpenGLNativeWidget(parent) {
@@ -58,11 +59,11 @@ vtkDataSet *QOrthodonticsViewWidget::getDataSet(const QString &name) {
   return mDataBase[name];
 }
 
-vtkActor *QOrthodonticsViewWidget::addPolyDataFromPath(
-    const std::string &path) const {
+vtkActor *QOrthodonticsViewWidget::addPolyDataFromPath(const QString &path) {
   vtkNew<vtkSTLReader> stlReader;
-  stlReader->SetFileName(path.c_str());
+  stlReader->SetFileName(path.toStdString().c_str());
   stlReader->Update();
+  mDataBase[QFileInfo(path).baseName()] = stlReader->GetOutput();
 
   return renderPolyData(stlReader->GetOutput());
 }

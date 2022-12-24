@@ -55,32 +55,47 @@ QOrthodonticsViewWidget::QOrthodonticsViewWidget(QWidget *parent)
   // renderPolyData(fillHolesFilter->GetOutput());
 }
 
-vtkDataSet *QOrthodonticsViewWidget::getDataSet(const QString &name) {
-  return mDataBase[name];
+vtkDataSet *QOrthodonticsViewWidget::getDataSet(const QString &name) const {
+  return std::get<0>(mDataBase[name]);
+}
+
+vtkAbstractMapper3D *QOrthodonticsViewWidget::getMapper(
+    const QString &name) const {
+  return std::get<1>(mDataBase[name]);
+}
+
+vtkProp3D *QOrthodonticsViewWidget::getProp(const QString &name) const {
+  return std::get<2>(mDataBase[name]);
 }
 
 void QOrthodonticsViewWidget::addPolyData(const QString &name,
                                           vtkPolyData *polyData) {
-  mDataBase[name] = polyData;
-  renderPolyData(polyData);
+  renderPolyData(name, polyData);
 }
 
 vtkActor *QOrthodonticsViewWidget::addPolyDataFromPath(const QString &path) {
   vtkNew<vtkSTLReader> stlReader;
   stlReader->SetFileName(path.toStdString().c_str());
   stlReader->Update();
-  mDataBase[QFileInfo(path).baseName()] = stlReader->GetOutput();
 
-  return renderPolyData(stlReader->GetOutput());
+  return renderPolyData(QFileInfo(path).baseName(), stlReader->GetOutput());
 }
 
-vtkActor *QOrthodonticsViewWidget::renderPolyData(vtkPolyData *polyData) const {
+vtkActor *QOrthodonticsViewWidget::renderPolyData(const QString &name,
+                                                  vtkPolyData *polyData) {
+  auto DataTuple = mDataBase[name];
+  auto oldProp = getProp(name);
+  if (oldProp != nullptr) {
+    renderWindow()->GetRenderers()->GetFirstRenderer()->RemoveViewProp(oldProp);
+  }
+
   vtkNew<vtkPolyDataMapper> polyDataMapper;
   polyDataMapper->SetInputData(polyData);
   polyDataMapper->Update();
 
   vtkNew<vtkActor> actor;
   actor->SetMapper(polyDataMapper);
+  mDataBase[name] = {polyData, polyDataMapper, actor};
 
   renderWindow()->GetRenderers()->GetFirstRenderer()->AddActor(actor);
   return actor;

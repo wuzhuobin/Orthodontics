@@ -12,7 +12,7 @@
 #ifndef Q_BRIDGE_VTK_HPP
 #define Q_BRIDGE_VTK_HPP
 
-#include "QImplicitPlaneControllerWidget.hpp"
+#include "QOrthodonticsImplicitPlaneControllerWidget.hpp"
 #include "QOrthodonticsViewWidget.hpp"
 #include "QOrthodonticsWidget.hpp"
 #include "vtkOrthodonticsContourWidget.hpp"
@@ -33,7 +33,7 @@ class QBridgeVtk : public QObject {
   void setupConnection();
 
  private:
-  QImplicitPlaneControllerWidget mImplicitPlaneControllerWidget;
+  QOrthodonticsImplicitPlaneControllerWidget mImplicitPlaneControllerWidget;
   QOrthodonticsViewWidget* mViewWidget;
   QOrthodonticsWidget* mWidget;
 

@@ -1,5 +1,5 @@
 /**
- * @file QImplicitPlaneControllerWidget.hpp
+ * @file QOrthodonticsImplicitPlaneControllerWidget.hpp
  * @author wuzhuobin (jiejin2022@163.com)
  * @brief
  * @version 0.1
@@ -12,17 +12,17 @@
 #ifndef Q_IMPLICIT_PLANE_WIDGET_HPP
 #define Q_IMPLICIT_PLANE_WIDGET_HPP
 
-#include "ui_QImplicitPlaneControllerWidget.h"
+#include "ui_QOrthodonticsImplicitPlaneControllerWidget.h"
 
 // qt
 #include <QWidget>
 
-class QImplicitPlaneControllerWidget
+class QOrthodonticsImplicitPlaneControllerWidget
     : public QWidget,
-      public Ui::QImplicitPlaneControllerWidget {
+      public Ui::QOrthodonticsImplicitPlaneControllerWidget {
   Q_OBJECT
  public:
-  explicit QImplicitPlaneControllerWidget(QWidget *parent = 0);
+  explicit QOrthodonticsImplicitPlaneControllerWidget(QWidget *parent = 0);
 };
 
 #endif  //! Q_IMPLICIT_PLANE_WIDGET_HPP

@@ -19,12 +19,16 @@
 vtkStandardNewMacro(vtkOrthodonticsImplicitPlaneWidget);
 
 void vtkOrthodonticsImplicitPlaneWidget::Initialize(vtkPolyData *data) {
-  CreateDefaultRepresentation();
   auto *representation = GetImplicitPlaneRepresentation();
-  representation->SetPlaceFactor(1.0);
   representation->PlaceWidget(data->GetBounds());
 }
 
 vtkPlane *vtkOrthodonticsImplicitPlaneWidget::GetImplicitPlane() {
   return GetImplicitPlaneRepresentation()->GetUnderlyingPlane();
+}
+
+vtkOrthodonticsImplicitPlaneWidget::vtkOrthodonticsImplicitPlaneWidget() {
+  CreateDefaultRepresentation();
+  auto *representation = GetImplicitPlaneRepresentation();
+  representation->SetPlaceFactor(1.0);
 }

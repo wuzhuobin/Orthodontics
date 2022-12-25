@@ -25,6 +25,9 @@ class vtkOrthodonticsImplicitPlaneWidget : public vtkImplicitPlaneWidget2 {
   //   virtual void Initialize(double bounds[6]);
   virtual void Initialize(vtkPolyData* data);
   virtual vtkPlane* GetImplicitPlane();
+
+ protected:
+  vtkOrthodonticsImplicitPlaneWidget();
 };
 
 #endif  // !VTK_ORTHODONTICS_IMPLICIT_PLANE_WIDGET_HPP

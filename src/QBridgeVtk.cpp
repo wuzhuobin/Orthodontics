@@ -75,7 +75,12 @@ void QBridgeVtk::setupConnection() {
   connect(mWidget->pushButtonSetupContour, &QPushButton::toggled,
           [this](auto enabled) {
             enableInteractorObserver(mContourWidget, enabled);
-
+            auto* lowerClippedProp3D =
+                mViewWidget->getProp("Lower+AntagonistScanClipped");
+            if (lowerClippedProp3D == nullptr) {
+              return;
+            }
+            mContourWidget->Initialize(lowerClippedProp3D);
             mViewWidget->renderWindow()->Render();
           });
 }

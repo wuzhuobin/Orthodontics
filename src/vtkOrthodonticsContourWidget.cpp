@@ -14,6 +14,7 @@
 // vtk
 #include <vtkObjectFactory.h>
 #include <vtkOrientedGlyphContourRepresentation.h>
+#include <vtkPolygonalSurfaceContourLineInterpolator.h>
 #include <vtkPolygonalSurfacePointPlacer.h>
 #include <vtkProperty.h>
 #include <vtkSphereSource.h>
@@ -29,6 +30,8 @@ vtkOrthodonticsContourWidget::vtkOrthodonticsContourWidget()
     : PolygonalSurfacePointPlacer(PolygonalSurfacePointPlacerPtr::New()) {
   CreateDefaultRepresentation();
   auto* rep = GetOrientedGlyphContourRepresentation();
+  rep->SetLineInterpolator(
+      vtkSmartPointer<vtkPolygonalSurfaceContourLineInterpolator>::New());
   rep->SetPointPlacer(PolygonalSurfacePointPlacer);
   vtkNew<vtkSphereSource> sphereSource;
   sphereSource->SetRadius(0.5);

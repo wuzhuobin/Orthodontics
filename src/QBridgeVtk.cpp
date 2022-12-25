@@ -16,6 +16,7 @@
 #include <vtkFillHolesFilter.h>
 #include <vtkPlaneCollection.h>
 #include <vtkPolyData.h>
+#include <vtkPolyDataConnectivityFilter.h>
 #include <vtkProp3D.h>
 #include <vtkRenderWindow.h>
 
@@ -37,29 +38,35 @@ void QBridgeVtk::setupConnection() {
             mViewWidget->renderWindow()->Render();
           });
 
-  connect(
-      mImplicitPlaneControllerWidget.pushButtonClip, &QPushButton::clicked,
-      [this]() {
-        auto* lowerProp3D = mViewWidget->getProp("Lower+AntagonistScan");
-        lowerProp3D->SetVisibility(false);
-        auto* plane = mImplicitPlaneWidget2->GetImplicitPlane();
-        vtkNew<vtkPlaneCollection> planeCollection;
-        planeCollection->AddItem(plane);
-        auto* lowerPolyData =
-            mViewWidget->getDataSet<vtkPolyData>("Lower+AntagonistScan");
-        vtkNew<vtkClipClosedSurface> clipClosedSurface;
-        clipClosedSurface->SetInputData(lowerPolyData);
-        clipClosedSurface->SetClippingPlanes(planeCollection);
-        clipClosedSurface->Update();
-        vtkNew<vtkFillHolesFilter> fillHolesFilter;
-        fillHolesFilter->SetInputConnection(clipClosedSurface->GetOutputPort());
-        fillHolesFilter->SetHoleSize(100);
-        fillHolesFilter->Update();
-        mViewWidget->addPolyData("Lower+AntagonistScanClipped",
-                                 fillHolesFilter->GetOutput());
+  connect(mImplicitPlaneControllerWidget.pushButtonClip, &QPushButton::clicked,
+          [this]() {
+            auto* lowerProp3D = mViewWidget->getProp("Lower+AntagonistScan");
+            lowerProp3D->SetVisibility(false);
+            auto* plane = mImplicitPlaneWidget2->GetImplicitPlane();
+            vtkNew<vtkPlaneCollection> planeCollection;
+            planeCollection->AddItem(plane);
+            auto* lowerPolyData =
+                mViewWidget->getDataSet<vtkPolyData>("Lower+AntagonistScan");
+            vtkNew<vtkClipClosedSurface> clipClosedSurface;
+            clipClosedSurface->SetInputData(lowerPolyData);
+            clipClosedSurface->SetClippingPlanes(planeCollection);
+            clipClosedSurface->Update();
+            vtkNew<vtkPolyDataConnectivityFilter> polyDataConnectivityFilter;
+            polyDataConnectivityFilter->SetInputConnection(
+                clipClosedSurface->GetOutputPort());
+            polyDataConnectivityFilter->SetExtractionMode(
+                VTK_EXTRACT_LARGEST_REGION);
+            polyDataConnectivityFilter->Update();
+            vtkNew<vtkFillHolesFilter> fillHolesFilter;
+            fillHolesFilter->SetInputConnection(
+                polyDataConnectivityFilter->GetOutputPort());
+            fillHolesFilter->SetHoleSize(100);
+            fillHolesFilter->Update();
+            mViewWidget->addPolyData("Lower+AntagonistScanClipped",
+                                     fillHolesFilter->GetOutput());
 
-        mViewWidget->renderWindow()->Render();
-      });
+            mViewWidget->renderWindow()->Render();
+          });
 
   connect(mImplicitPlaneControllerWidget.pushButtonReset, &QPushButton::clicked,
           [this]() {
@@ -79,7 +86,9 @@ void QBridgeVtk::setupConnection() {
             auto* lowerClippedProp3D =
                 mViewWidget->getProp("Lower+AntagonistScanClipped");
             if (lowerClippedProp3D == nullptr) {
-              return;
+              // return;
+              ///< @todo For testing
+              lowerClippedProp3D = mViewWidget->getProp("Lower+AntagonistScan");
             }
             mContourWidget->Initialize(lowerClippedProp3D);
             mViewWidget->renderWindow()->Render();

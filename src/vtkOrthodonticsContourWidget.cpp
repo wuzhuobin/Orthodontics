@@ -15,6 +15,7 @@
 #include <vtkObjectFactory.h>
 #include <vtkOrientedGlyphContourRepresentation.h>
 #include <vtkPolygonalSurfacePointPlacer.h>
+#include <vtkSphereSource.h>
 
 vtkStandardNewMacro(vtkOrthodonticsContourWidget);
 
@@ -28,6 +29,17 @@ vtkOrthodonticsContourWidget::vtkOrthodonticsContourWidget()
   CreateDefaultRepresentation();
   GetOrientedGlyphContourRepresentation()->SetPointPlacer(
       PolygonalSurfacePointPlacer);
+  vtkNew<vtkSphereSource> sphereSource;
+  sphereSource->SetRadius(0.5);
+  sphereSource->Update();
+  vtkNew<vtkPolyData> cursor;
+  cursor->ShallowCopy(sphereSource->GetOutput());
+  GetOrientedGlyphContourRepresentation()->SetCursorShape(cursor);
+  sphereSource->SetRadius(0.7);
+  sphereSource->Update();
+  vtkNew<vtkPolyData> activeCursor;
+  activeCursor->ShallowCopy(sphereSource->GetOutput());
+  GetOrientedGlyphContourRepresentation()->SetActiveCursorShape(activeCursor);
 }
 
 vtkOrientedGlyphContourRepresentation*

@@ -5,8 +5,6 @@
  * @version 0.1
  * @copyright copyright (c) 2022
  *
- * @copyright Copyright (c) 2022 Koninklijke Philips N.V. @ER2967
- *
  */
 
 #include "vtkOrthodonticsContourWidget.hpp"

@@ -29,19 +29,19 @@ class QBridgeVtk : public QObject {
   Q_OBJECT
 
  public:
-  void setViewWidget(QOrthodonticsViewWidget* viewWidget);
-  void setWidget(QOrthodonticsWidget* widget);
-  void setupConnection();
+  explicit QBridgeVtk(QOrthodonticsViewWidget& viewWidget,
+                      QOrthodonticsWidget& widget, QObject* parent = nullptr);
 
  private:
   QOrthodonticsImplicitPlaneControllerWidget mImplicitPlaneControllerWidget;
   QOrthodonticsContourControllerWidget mContourControllerWidget;
-  QOrthodonticsViewWidget* mViewWidget;
-  QOrthodonticsWidget* mWidget;
+  QOrthodonticsViewWidget& mViewWidget;
+  QOrthodonticsWidget& mWidget;
 
   vtkNew<vtkOrthodonticsContourWidget> mContourWidget;
   vtkNew<vtkOrthodonticsImplicitPlaneWidget> mImplicitPlaneWidget2;
 
+  void setupConnection();
   void enableInteractorObserver(vtkInteractorObserver* observer, bool enabled);
 };
 

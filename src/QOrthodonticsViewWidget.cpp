@@ -74,7 +74,7 @@ void QOrthodonticsViewWidget::addPolyData(const QString &name,
 
 vtkActor *QOrthodonticsViewWidget::addPolyDataFromPath(const QString &path) {
   vtkNew<vtkSTLReader> stlReader;
-  stlReader->SetFileName(path.toStdString().c_str());
+  stlReader->SetFileName(path.toLatin1());
   stlReader->Update();
 
   return renderPolyData(QFileInfo(path).baseName(), stlReader->GetOutput());

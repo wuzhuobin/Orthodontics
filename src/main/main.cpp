@@ -25,10 +25,7 @@ int main(int argc, char *argv[]) {
   QOrthodonticsViewWidget view;
   view.show();
   view.resize(1024, 1024);
-  QBridgeVtk bridge;
-  bridge.setViewWidget(&view);
-  bridge.setWidget(&widget);
-  bridge.setupConnection();
+  QBridgeVtk bridge(view, widget);
 
   return app.exec();
 }

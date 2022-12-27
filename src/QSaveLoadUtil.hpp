@@ -36,8 +36,12 @@ class QSaveLoadUtil : public QObject {
   [[nodiscard]] vtkPolyData* loadPolyData(const QString& name) const;
 
  private:
+  enum class Type { Unknown = 0, VTK, STL };
   vtkNew<vtkPolyDataReader> mPolyDataReader;
   vtkNew<vtkPolyDataWriter> mPolyDataWriter;
+  vtkNew<vtkSTLReader> mSTLReader;
+  vtkNew<vtkSTLWriter> mSTLWriter;
+  static Type checkType(const QString name);
 };
 
 #endif  //! Q_SAVE_LOAD_UTIL_HPP

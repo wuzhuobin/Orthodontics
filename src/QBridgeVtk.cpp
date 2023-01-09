@@ -11,6 +11,8 @@
 
 #include "QBridgeVtk.hpp"
 
+#include "QSaveLoadUtil.hpp"
+
 // vtk
 #include <vtkClipClosedSurface.h>
 #include <vtkFillHolesFilter.h>
@@ -20,6 +22,11 @@
 #include <vtkProp3D.h>
 #include <vtkRenderWindow.h>
 
+// qt
+#include <QFileDialog>
+#include <QFileInfo>
+#include <QMessageBox>
+
 QBridgeVtk::QBridgeVtk(QOrthodonticsViewWidget& viewWidget,
                        QOrthodonticsWidget& widget, QObject* parent)
     : QObject(parent), mViewWidget(viewWidget), mWidget(widget) {
@@ -28,11 +35,11 @@ QBridgeVtk::QBridgeVtk(QOrthodonticsViewWidget& viewWidget,
 
 void QBridgeVtk::setupConnection() {
   connect(mWidget.pushButtonSetupPlane, &QPushButton::toggled,
-          [this](auto enabled) {
-            mImplicitPlaneControllerWidget.setVisible(enabled);
+          [this](auto checked) {
+            mImplicitPlaneControllerWidget.setVisible(checked);
             auto* lowerPolyData =
                 mViewWidget.getDataSet<vtkPolyData>("Lower+AntagonistScan");
-            enableInteractorObserver(mImplicitPlaneWidget2, enabled);
+            enableInteractorObserver(mImplicitPlaneWidget2, checked);
             mImplicitPlaneWidget2->Initialize(lowerPolyData);
 
             mViewWidget.renderWindow()->Render();
@@ -80,9 +87,9 @@ void QBridgeVtk::setupConnection() {
           });
 
   connect(mWidget.pushButtonSetupContour, &QPushButton::toggled,
-          [this](auto enabled) {
-            mContourControllerWidget.setVisible(enabled);
-            enableInteractorObserver(mContourWidget, enabled);
+          [this](auto checked) {
+            mContourControllerWidget.setVisible(checked);
+            enableInteractorObserver(mContourWidget, checked);
             auto* lowerClippedProp3D =
                 mViewWidget.getProp("Lower+AntagonistScanClipped");
             if (lowerClippedProp3D == nullptr) {
@@ -93,6 +100,26 @@ void QBridgeVtk::setupConnection() {
             mContourWidget->Initialize(lowerClippedProp3D);
             mViewWidget.renderWindow()->Render();
           });
+
+  connect(mWidget.pushButtonSave, &QPushButton::clicked, [this]() {
+    QOrthodonticsWidget* parent = static_cast<QOrthodonticsWidget*>(sender());
+
+    auto fileName =
+        QFileDialog::getSaveFileName(parent, tr("Save Model"), QString(),
+                                     tr("STL File(*.stl);;VTK File(*.vtk)"));
+
+    if (fileName.isEmpty()) {
+      return;
+    }
+
+    if (auto* data =
+            mViewWidget.getDataSet<vtkPolyData>(QFileInfo(fileName).baseName());
+        data == nullptr ||
+        !QSaveLoadUtil::instance().savePolyData(data, fileName)) {
+      QMessageBox::critical(parent, tr("Save Failed"),
+                            tr("Cannot to save ") + fileName);
+    }
+  });
 }
 
 void QBridgeVtk::enableInteractorObserver(vtkInteractorObserver* observer,

@@ -27,6 +27,7 @@ class vtkOrthodonticsContourWidget : public vtkContourWidget {
 
  protected:
   vtkOrthodonticsContourWidget();
+  static void EndSelectAction(vtkAbstractWidget* widget);
 
  private:
   using PolygonalSurfacePointPlacerPtr =

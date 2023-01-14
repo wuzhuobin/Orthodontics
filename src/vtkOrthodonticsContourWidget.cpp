@@ -10,12 +10,15 @@
 #include "vtkOrthodonticsContourWidget.hpp"
 
 // vtk
+#include <vtkCommand.h>
 #include <vtkObjectFactory.h>
 #include <vtkOrientedGlyphContourRepresentation.h>
 #include <vtkPolygonalSurfaceContourLineInterpolator.h>
 #include <vtkPolygonalSurfacePointPlacer.h>
 #include <vtkProperty.h>
 #include <vtkSphereSource.h>
+#include <vtkWidgetCallbackMapper.h>
+#include <vtkWidgetEvent.h>
 
 vtkStandardNewMacro(vtkOrthodonticsContourWidget);
 
@@ -44,6 +47,20 @@ vtkOrthodonticsContourWidget::vtkOrthodonticsContourWidget()
   rep->SetActiveCursorShape(activeCursor);
   rep->GetLinesProperty()->SetColor(0.0, 0.0, 1.0);
   rep->GetLinesProperty()->SetLineWidth(2.0);
+
+  CallbackMapper->SetCallbackMethod(
+      vtkCommand::RightButtonReleaseEvent, vtkWidgetEvent::EndScale, this,
+      vtkOrthodonticsContourWidget::EndSelectAction);
+}
+
+void vtkOrthodonticsContourWidget::EndSelectAction(vtkAbstractWidget* widget) {
+  Superclass::EndSelectAction(widget);
+  auto* self = reinterpret_cast<vtkOrthodonticsContourWidget*>(widget);
+  auto* rep = self->GetOrientedGlyphContourRepresentation();
+  if (rep->GetCurrentOperation() == vtkContourRepresentation::Inactive &&
+      !rep->GetClosedLoop()) {
+    self->CloseLoop();
+  }
 }
 
 vtkOrientedGlyphContourRepresentation*

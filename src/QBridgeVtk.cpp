@@ -125,8 +125,6 @@ void QBridgeVtk::setupConnection() {
               contourWidget->Initialize(lowerClippedProp3D);
               mViewWidget.renderWindow()->Render();
             });
-
-    std::cout << contourButton->objectName().toStdString() << '\n';
   }
 
   connect(mWidget.pushButtonSave, &QPushButton::clicked, [this]() {

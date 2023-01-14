@@ -24,6 +24,7 @@
 
 // vtk
 #include <vtkNew.h>
+#include <vtkSmartPointer.h>
 
 class QBridgeVtk : public QObject {
   Q_OBJECT
@@ -38,7 +39,8 @@ class QBridgeVtk : public QObject {
   QOrthodonticsViewWidget& mViewWidget;
   QOrthodonticsWidget& mWidget;
 
-  vtkNew<vtkOrthodonticsContourWidget> mContourWidget;
+  // vtkNew<vtkOrthodonticsContourWidget> mContourWidget;
+  QList<vtkSmartPointer<vtkOrthodonticsContourWidget>> mContourWidgets;
   vtkNew<vtkOrthodonticsImplicitPlaneWidget> mImplicitPlaneWidget2;
 
   void setupConnection();

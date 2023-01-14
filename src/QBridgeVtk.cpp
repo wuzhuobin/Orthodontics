@@ -26,6 +26,7 @@
 #include <QFileDialog>
 #include <QFileInfo>
 #include <QMessageBox>
+#include <QRegularExpression>
 
 QBridgeVtk::QBridgeVtk(QOrthodonticsViewWidget& viewWidget,
                        QOrthodonticsWidget& widget, QObject* parent)
@@ -89,17 +90,44 @@ void QBridgeVtk::setupConnection() {
   connect(mWidget.pushButtonSetupContour, &QPushButton::toggled,
           [this](auto checked) {
             mContourControllerWidget.setVisible(checked);
-            enableInteractorObserver(mContourWidget, checked);
-            auto* lowerClippedProp3D =
-                mViewWidget.getProp("Lower+AntagonistScanClipped");
-            if (lowerClippedProp3D == nullptr) {
-              // return;
-              ///< @todo For testing
-              lowerClippedProp3D = mViewWidget.getProp("Lower+AntagonistScan");
-            }
-            mContourWidget->Initialize(lowerClippedProp3D);
-            mViewWidget.renderWindow()->Render();
+            // enableInteractorObserver(mContourWidget, checked);
+            // auto* lowerClippedProp3D =
+            //     mViewWidget.getProp("Lower+AntagonistScanClipped");
+            // if (lowerClippedProp3D == nullptr) {
+            //   // return;
+            //   ///< @todo For testing
+            //   lowerClippedProp3D =
+            //   mViewWidget.getProp("Lower+AntagonistScan");
+            // }
+            // mContourWidget->Initialize(lowerClippedProp3D);
+            // mViewWidget.renderWindow()->Render();
           });
+
+  auto contourButtons = mContourControllerWidget.findChildren<QToolButton*>(
+      QRegularExpression("toolButtonContour[0-9]{2}"));
+  for (const auto& contourButton : contourButtons) {
+    auto contourWidget = vtkSmartPointer<vtkOrthodonticsContourWidget>::New();
+    mContourWidgets << contourWidget;
+    connect(contourButton, &QToolButton::toggled,
+            [contourWidget, this](auto checked) {
+              enableInteractorObserver(contourWidget, checked);
+              if (!checked) {
+                return;
+              }
+              auto* lowerClippedProp3D =
+                  mViewWidget.getProp("Lower+AntagonistScanClipped");
+              if (lowerClippedProp3D == nullptr) {
+                // return;
+                ///< @todo For testing
+                lowerClippedProp3D =
+                    mViewWidget.getProp("Lower+AntagonistScan");
+              }
+              contourWidget->Initialize(lowerClippedProp3D);
+              mViewWidget.renderWindow()->Render();
+            });
+
+    std::cout << contourButton->objectName().toStdString() << '\n';
+  }
 
   connect(mWidget.pushButtonSave, &QPushButton::clicked, [this]() {
     QOrthodonticsWidget* parent = static_cast<QOrthodonticsWidget*>(sender());

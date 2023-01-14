@@ -89,6 +89,7 @@
 		"xtr1common": "cpp",
 		"xtree": "cpp",
 		"xutility": "cpp",
-		"*.in": "cpp"
+		"*.in": "cpp",
+		"*.txx": "cpp"
 	}
 }

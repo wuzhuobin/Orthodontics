@@ -76,6 +76,30 @@ void QBridgeVtk::setupConnection() {
             mViewWidget.renderWindow()->Render();
           });
 
+  setupOrthodonticsContourControllerWidget();
+
+  connect(mWidget.pushButtonSave, &QPushButton::clicked, [this]() {
+    QOrthodonticsWidget* parent = static_cast<QOrthodonticsWidget*>(sender());
+
+    auto fileName =
+        QFileDialog::getSaveFileName(parent, tr("Save Model"), QString(),
+                                     tr("STL File(*.stl);;VTK File(*.vtk)"));
+
+    if (fileName.isEmpty()) {
+      return;
+    }
+
+    if (auto* data =
+            mViewWidget.getDataSet<vtkPolyData>(QFileInfo(fileName).baseName());
+        data == nullptr ||
+        !QSaveLoadUtil::instance().savePolyData(data, fileName)) {
+      QMessageBox::critical(parent, tr("Save Failed"),
+                            tr("Cannot to save ") + fileName);
+    }
+  });
+}
+
+void QBridgeVtk::setupOrthodonticsContourControllerWidget() {
   connect(mImplicitPlaneControllerWidget.pushButtonReset, &QPushButton::clicked,
           [this]() {
             auto* lowerProp3D = mViewWidget.getProp("Lower+AntagonistScan");
@@ -87,21 +111,9 @@ void QBridgeVtk::setupConnection() {
             mViewWidget.renderWindow()->Render();
           });
 
-  connect(mWidget.pushButtonSetupContour, &QPushButton::toggled,
-          [this](auto checked) {
-            mContourControllerWidget.setVisible(checked);
-            // enableInteractorObserver(mContourWidget, checked);
-            // auto* lowerClippedProp3D =
-            //     mViewWidget.getProp("Lower+AntagonistScanClipped");
-            // if (lowerClippedProp3D == nullptr) {
-            //   // return;
-            //   ///< @todo For testing
-            //   lowerClippedProp3D =
-            //   mViewWidget.getProp("Lower+AntagonistScan");
-            // }
-            // mContourWidget->Initialize(lowerClippedProp3D);
-            // mViewWidget.renderWindow()->Render();
-          });
+  connect(
+      mWidget.pushButtonSetupContour, &QPushButton::toggled,
+      [this](auto checked) { mContourControllerWidget.setVisible(checked); });
 
   auto contourButtons = mContourControllerWidget.findChildren<QToolButton*>(
       QRegularExpression("toolButtonContour[0-9]{2}"));
@@ -127,25 +139,12 @@ void QBridgeVtk::setupConnection() {
             });
   }
 
-  connect(mWidget.pushButtonSave, &QPushButton::clicked, [this]() {
-    QOrthodonticsWidget* parent = static_cast<QOrthodonticsWidget*>(sender());
-
-    auto fileName =
-        QFileDialog::getSaveFileName(parent, tr("Save Model"), QString(),
-                                     tr("STL File(*.stl);;VTK File(*.vtk)"));
-
-    if (fileName.isEmpty()) {
-      return;
-    }
-
-    if (auto* data =
-            mViewWidget.getDataSet<vtkPolyData>(QFileInfo(fileName).baseName());
-        data == nullptr ||
-        !QSaveLoadUtil::instance().savePolyData(data, fileName)) {
-      QMessageBox::critical(parent, tr("Save Failed"),
-                            tr("Cannot to save ") + fileName);
-    }
-  });
+  connect(mContourControllerWidget.pushButtonClip, &QPushButton::clicked,
+          [this]() {
+            for (auto contourWidget : mContourWidgets) {
+              auto rep = contourWidget->GetContourRepresentation();
+            }
+          });
 }
 
 void QBridgeVtk::enableInteractorObserver(vtkInteractorObserver* observer,

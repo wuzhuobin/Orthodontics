@@ -44,6 +44,7 @@ class QBridgeVtk : public QObject {
   vtkNew<vtkOrthodonticsImplicitPlaneWidget> mImplicitPlaneWidget2;
 
   void setupConnection();
+  void setupOrthodonticsContourControllerWidget();
   void enableInteractorObserver(vtkInteractorObserver* observer, bool enabled);
 };
 

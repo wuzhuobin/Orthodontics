@@ -44,7 +44,7 @@ class QOrthodonticsViewWidget : public QVTKOpenGLNativeWidget {
   }
   vtkProp3D *getProp(const QString &name) const;
   template <typename T>
-  T *getProp(const QString &) const {
+  T *getProp(const QString &name) const {
     return T::SafeDownCast(getProp(name));
   }
   void addPolyData(const QString &name, vtkPolyData *polyData);

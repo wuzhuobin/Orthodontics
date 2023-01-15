@@ -17,13 +17,14 @@
 #include <vtkSmartPointer.h>
 class vtkOrientedGlyphContourRepresentation;
 class vtkPolygonalSurfacePointPlacer;
-class vtkProp;
+class vtkActor;
 
 class vtkOrthodonticsContourWidget : public vtkContourWidget {
  public:
   static vtkOrthodonticsContourWidget* New();
   vtkTypeMacro(vtkOrthodonticsContourWidget, vtkContourWidget);
-  virtual void Initialize(vtkProp* prop);
+  virtual void Initialize(vtkActor* prop);
+  virtual vtkPolyData* Clip();
 
  protected:
   vtkOrthodonticsContourWidget();
@@ -33,6 +34,9 @@ class vtkOrthodonticsContourWidget : public vtkContourWidget {
   using PolygonalSurfacePointPlacerPtr =
       vtkSmartPointer<vtkPolygonalSurfacePointPlacer>;
   PolygonalSurfacePointPlacerPtr PolygonalSurfacePointPlacer;
+  vtkPolyData* Clippee = nullptr;
+  using PolyDataPtr = vtkSmartPointer<vtkPolyData>;
+  PolyDataPtr ClippedClippee;
 
   vtkOrientedGlyphContourRepresentation*
   GetOrientedGlyphContourRepresentation();

@@ -14,12 +14,12 @@
 #include "QSaveLoadUtil.hpp"
 
 // vtk
+#include <vtkActor.h>
 #include <vtkClipClosedSurface.h>
 #include <vtkFillHolesFilter.h>
 #include <vtkPlaneCollection.h>
 #include <vtkPolyData.h>
 #include <vtkPolyDataConnectivityFilter.h>
-#include <vtkProp3D.h>
 #include <vtkRenderWindow.h>
 
 // qt
@@ -127,12 +127,12 @@ void QBridgeVtk::setupOrthodonticsContourControllerWidget() {
                 return;
               }
               auto* lowerClippedProp3D =
-                  mViewWidget.getProp("Lower+AntagonistScanClipped");
+                  mViewWidget.getProp<vtkActor>("Lower+AntagonistScanClipped");
               if (lowerClippedProp3D == nullptr) {
                 // return;
                 ///< @todo For testing
                 lowerClippedProp3D =
-                    mViewWidget.getProp("Lower+AntagonistScan");
+                    mViewWidget.getProp<vtkActor>("Lower+AntagonistScan");
               }
               contourWidget->Initialize(lowerClippedProp3D);
               mViewWidget.renderWindow()->Render();
@@ -140,9 +140,23 @@ void QBridgeVtk::setupOrthodonticsContourControllerWidget() {
   }
 
   connect(mContourControllerWidget.pushButtonClip, &QPushButton::clicked,
+
           [this]() {
+            auto* lowerClippedProp3D =
+                mViewWidget.getProp("Lower+AntagonistScanClipped");
+            if (lowerClippedProp3D == nullptr) {
+              // return;
+              ///< @todo For testing
+              lowerClippedProp3D = mViewWidget.getProp("Lower+AntagonistScan");
+            }
+            lowerClippedProp3D->SetVisibility(false);
             for (auto contourWidget : mContourWidgets) {
               auto rep = contourWidget->GetContourRepresentation();
+              auto clipped = contourWidget->Clip();
+              if (clipped != nullptr) {
+                mViewWidget.addPolyData("abc", clipped);
+                mViewWidget.renderWindow()->Render();
+              }
             }
           });
 }

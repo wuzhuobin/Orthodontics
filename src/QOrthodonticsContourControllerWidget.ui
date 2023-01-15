@@ -293,6 +293,9 @@
      <property name="text">
       <string>Stop</string>
      </property>
+     <property name="checkable">
+      <bool>true</bool>
+     </property>
      <attribute name="buttonGroup">
       <string notr="true">buttonGroup</string>
      </attribute>

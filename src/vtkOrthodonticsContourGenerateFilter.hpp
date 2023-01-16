@@ -19,11 +19,23 @@
 
 class vtkOrthodonticsContourGenerateFilter : public vtkPolyDataAlgorithm {
  public:
+  ///@{
+  /**
+   * Set/get the upper and lower thresholds. The default values are set to
+   * +infinity and -infinity, respectively.
+   */
+  vtkSetMacro(UpperThreshold, double);
+  vtkSetMacro(LowerThreshold, double);
+  vtkGetMacro(UpperThreshold, double);
+  vtkGetMacro(LowerThreshold, double);
+  ///@}
  protected:
   int RequestData(vtkInformation* request, vtkInformationVector** inputVector,
                   vtkInformationVector* outputVector) override;
 
   vtkNew<vtkThreshold> Threshold;
+  double LowerThreshold = VTK_DOUBLE_MIN;
+  double UpperThreshold = VTK_DOUBLE_MAX;
 };
 
 #endif  // ! VTK_ORTHODONTICS_CONTOUR_GENERATE_FILTER_HPP

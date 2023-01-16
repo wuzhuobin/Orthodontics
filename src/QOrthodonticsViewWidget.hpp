@@ -32,6 +32,8 @@ class QOrthodonticsViewWidget : public QVTKOpenGLNativeWidget {
 
  public:
   explicit QOrthodonticsViewWidget(QWidget *parent = nullptr);
+  void addPolyData(const QString &path);
+  void addPolyData(const QString &name, vtkPolyData *polyData);
   vtkDataSet *getDataSet(const QString &name) const;
   template <typename T>
   T *getDataSet(const QString &name) const {
@@ -47,7 +49,6 @@ class QOrthodonticsViewWidget : public QVTKOpenGLNativeWidget {
   T *getProp(const QString &name) const {
     return T::SafeDownCast(getProp(name));
   }
-  void addPolyData(const QString &name, vtkPolyData *polyData);
 
  private:
   vtkActor *addPolyDataFromPath(const QString &path);

@@ -23,6 +23,17 @@ int main(int argc, char *argv[]) {
   QOrthodonticsWidget widget;
   widget.show();
   QOrthodonticsViewWidget view;
+  ///@{
+  ///< tesing
+  const auto *lowerPath = "C:/ccode/Orthodontics/data/Lower+AntagonistScan.stl";
+  view.addPolyData(lowerPath);
+  const auto *lowerClippedPath =
+      "C:/ccode/Orthodontics/data/Lower+AntagonistScanClipped.stl";
+  view.addPolyData(lowerClippedPath);
+  const auto *lowerClippedCurvaturesPath =
+      "C:/ccode/Orthodontics/data/Lower+AntagonistScanClippedCurvatures.vtk";
+  view.addPolyData(lowerClippedCurvaturesPath);
+  ///@}
   view.show();
   view.resize(1024, 1024);
   QBridgeVtk bridge(view, widget);

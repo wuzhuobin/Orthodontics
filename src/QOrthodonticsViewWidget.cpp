@@ -11,6 +11,8 @@
 
 #include "QOrthodonticsViewWidget.hpp"
 
+#include "QSaveLoadUtil.hpp"
+
 // vtk
 #include <vtkActor.h>
 #include <vtkNew.h>
@@ -18,7 +20,6 @@
 #include <vtkRenderer.h>
 #include <vtkRendererCollection.h>
 #include <vtkRenderwindow.h>
-#include <vtkSTLReader.h>
 
 // std
 #include <iostream>
@@ -31,27 +32,10 @@ QOrthodonticsViewWidget::QOrthodonticsViewWidget(QWidget *parent)
     : QVTKOpenGLNativeWidget(parent) {
   vtkNew<vtkRenderer> renderer;
   renderWindow()->AddRenderer(renderer);
+}
 
-  const auto *lowerPath = "C:/ccode/Orthodontics/data/Lower+AntagonistScan.stl";
-  auto *lowerActor = addPolyDataFromPath(lowerPath);
-  // lowerActor->SetVisibility(false);
-  // const auto *upperPath =
-  //     "C:/ccode/Orthodontics/data/Upper+PreparationScan.stl";
-  // auto *upperActor = addPolyDataFromPath(upperPath);
-  // upperActor->SetVisibility(false);
-  // const auto *lowerClippedPath =
-  //     "C:/ccode/Orthodontics/data/Lower+AntagonistScanClipped.stl";
-
-  // vtkNew<vtkSTLReader> stlReader;
-  // stlReader->SetFileName(lowerClippedPath);
-  // stlReader->Update();
-
-  // vtkNew<vtkFillHolesFilter> fillHolesFilter;
-  // fillHolesFilter->SetInputConnection(stlReader->GetOutputPort());
-  // fillHolesFilter->SetHoleSize(100);
-  // fillHolesFilter->Update();
-
-  // renderPolyData(fillHolesFilter->GetOutput());
+void QOrthodonticsViewWidget::addPolyData(const QString &path) {
+  addPolyDataFromPath(path);
 }
 
 vtkDataSet *QOrthodonticsViewWidget::getDataSet(const QString &name) const {
@@ -73,11 +57,8 @@ void QOrthodonticsViewWidget::addPolyData(const QString &name,
 }
 
 vtkActor *QOrthodonticsViewWidget::addPolyDataFromPath(const QString &path) {
-  vtkNew<vtkSTLReader> stlReader;
-  stlReader->SetFileName(path.toLatin1());
-  stlReader->Update();
-
-  return renderPolyData(QFileInfo(path).baseName(), stlReader->GetOutput());
+  auto *data = QSaveLoadUtil::instance().loadPolyData(path);
+  return renderPolyData(QFileInfo(path).baseName(), data);
 }
 
 vtkActor *QOrthodonticsViewWidget::renderPolyData(const QString &name,

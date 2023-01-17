@@ -42,21 +42,23 @@ bool QSaveLoadUtil::savePolyData(vtkPolyData* data, const QString& name) const {
   }
 }
 
-vtkPolyData* QSaveLoadUtil::loadPolyData(const QString& name) const {
-  if (name.isEmpty()) {
-    return nullptr;
+bool QSaveLoadUtil::loadPolyData(vtkPolyData* data, const QString& name) const {
+  if (data == nullptr || name.isEmpty()) {
+    return false;
   }
   switch (checkType(name)) {
     case Type::VTK:
       mPolyDataReader->SetFileName(name.toLatin1());
       mPolyDataReader->Update();
-      return mPolyDataReader->GetOutput();
+      data->ShallowCopy(mPolyDataReader->GetOutput());
+      return true;
     case Type::STL:
       mSTLReader->SetFileName(name.toLatin1());
       mSTLReader->Update();
-      return mSTLReader->GetOutput();
+      data->ShallowCopy(mSTLReader->GetOutput());
+      return true;
     default:
-      return nullptr;
+      return false;
   }
 }
 

@@ -33,7 +33,7 @@ class QSaveLoadUtil : public QObject {
   static const QSaveLoadUtil& instance();
 
   [[nodiscard]] bool savePolyData(vtkPolyData* data, const QString& name) const;
-  [[nodiscard]] vtkPolyData* loadPolyData(const QString& name) const;
+  [[nodiscard]] bool loadPolyData(vtkPolyData* data, const QString& name) const;
 
  private:
   enum class Type { Unknown = 0, VTK, STL };

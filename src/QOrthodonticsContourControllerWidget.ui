@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>262</width>
+    <width>670</width>
     <height>700</height>
    </rect>
   </property>
@@ -15,11 +15,63 @@
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
-    <widget class="QPushButton" name="pushButtonClip">
-     <property name="text">
-      <string>Clip</string>
-     </property>
-    </widget>
+    <layout class="QHBoxLayout" name="horizontalLayout">
+     <item>
+      <widget class="QDoubleSpinBox" name="doubleSpinBoxLowerRange">
+       <property name="decimals">
+        <number>1</number>
+       </property>
+       <property name="minimum">
+        <double>-99.000000000000000</double>
+       </property>
+       <property name="maximum">
+        <double>99.000000000000000</double>
+       </property>
+       <property name="value">
+        <double>0.000000000000000</double>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QSlider" name="horizontalSliderLowerThreshold">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QDoubleSpinBox" name="doubleSpinBoxLowerThreshold">
+       <property name="decimals">
+        <number>5</number>
+       </property>
+       <property name="minimum">
+        <double>-99.000000000000000</double>
+       </property>
+       <property name="singleStep">
+        <double>0.001000000000000</double>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QDoubleSpinBox" name="doubleSpinBoxUpperRange">
+       <property name="decimals">
+        <number>1</number>
+       </property>
+       <property name="minimum">
+        <double>-99.000000000000000</double>
+       </property>
+       <property name="maximum">
+        <double>99.000000000000000</double>
+       </property>
+       <property name="singleStep">
+        <double>1.000000000000000</double>
+       </property>
+       <property name="value">
+        <double>0.000000000000000</double>
+       </property>
+      </widget>
+     </item>
+    </layout>
    </item>
    <item>
     <layout class="QGridLayout" name="gridLayout">
@@ -151,7 +203,7 @@
        </attribute>
       </widget>
      </item>
-     <item row="1" column="0">
+     <item row="0" column="8">
       <widget class="QToolButton" name="toolButtonContour21">
        <property name="enabled">
         <bool>true</bool>
@@ -167,7 +219,7 @@
        </attribute>
       </widget>
      </item>
-     <item row="1" column="1">
+     <item row="0" column="9">
       <widget class="QToolButton" name="toolButtonContour22">
        <property name="enabled">
         <bool>true</bool>
@@ -183,7 +235,7 @@
        </attribute>
       </widget>
      </item>
-     <item row="1" column="2">
+     <item row="0" column="10">
       <widget class="QToolButton" name="toolButtonContour23">
        <property name="enabled">
         <bool>true</bool>
@@ -199,7 +251,7 @@
        </attribute>
       </widget>
      </item>
-     <item row="1" column="3">
+     <item row="0" column="11">
       <widget class="QToolButton" name="toolButtonContour24">
        <property name="enabled">
         <bool>true</bool>
@@ -215,7 +267,7 @@
        </attribute>
       </widget>
      </item>
-     <item row="1" column="4">
+     <item row="0" column="12">
       <widget class="QToolButton" name="toolButtonContour25">
        <property name="enabled">
         <bool>true</bool>
@@ -231,7 +283,7 @@
        </attribute>
       </widget>
      </item>
-     <item row="1" column="5">
+     <item row="0" column="13">
       <widget class="QToolButton" name="toolButtonContour26">
        <property name="enabled">
         <bool>true</bool>
@@ -247,7 +299,7 @@
        </attribute>
       </widget>
      </item>
-     <item row="1" column="6">
+     <item row="0" column="14">
       <widget class="QToolButton" name="toolButtonContour27">
        <property name="enabled">
         <bool>true</bool>
@@ -263,7 +315,7 @@
        </attribute>
       </widget>
      </item>
-     <item row="1" column="7">
+     <item row="0" column="15">
       <widget class="QToolButton" name="toolButtonContour28">
        <property name="enabled">
         <bool>true</bool>
@@ -280,6 +332,13 @@
       </widget>
      </item>
     </layout>
+   </item>
+   <item>
+    <widget class="QPushButton" name="pushButtonClip">
+     <property name="text">
+      <string>Clip</string>
+     </property>
+    </widget>
    </item>
    <item>
     <widget class="QPushButton" name="pushButton">

@@ -57,7 +57,12 @@ void QOrthodonticsViewWidget::addPolyData(const QString &name,
 }
 
 vtkActor *QOrthodonticsViewWidget::addPolyDataFromPath(const QString &path) {
-  auto *data = QSaveLoadUtil::instance().loadPolyData(path);
+  vtkNew<vtkPolyData> data;
+  auto success = QSaveLoadUtil::instance().loadPolyData(data, path);
+  if (!success) {
+    std::cerr << "Could not load " << path.toStdString() << '\n';
+    return nullptr;
+  }
   return renderPolyData(QFileInfo(path).baseName(), data);
 }
 

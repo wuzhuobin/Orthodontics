@@ -23,6 +23,13 @@ class QOrthodonticsContourControllerWidget
   Q_OBJECT
  public:
   QOrthodonticsContourControllerWidget(QWidget *parent = nullptr);
+
+ private:
+  void horizontalSliderLowerThresholdUpdate();
+  //   Q_SLOT void on_doubleSpinBoxLowerRange_valueChanged(double value);
+  //   Q_SLOT void on_doubleSpinBoxUpperRange_valueChanged(double value);
+  //   Q_SLOT void on_doubleSpinBoxLowerThreshold_valueChanged(double value);
+  //   Q_SLOT void on_horizontalSliderLowerThreshold_valueChanged(int value);
 };
 
 #endif  //! Q_ORTHODONTICS_CONTOUR_CONTROLLER_WIDGET_HPP

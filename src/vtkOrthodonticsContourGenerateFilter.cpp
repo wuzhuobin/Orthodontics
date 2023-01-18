@@ -15,7 +15,10 @@
 #include <vtkDataObject.h>
 #include <vtkInformation.h>
 #include <vtkInformationVector.h>
+#include <vtkObjectFactory.h>
 #include <vtkPolyData.h>
+
+vtkStandardNewMacro(vtkOrthodonticsContourGenerateFilter);
 
 int vtkOrthodonticsContourGenerateFilter::RequestData(
     vtkInformation* request, vtkInformationVector** inputVector,
@@ -31,9 +34,17 @@ int vtkOrthodonticsContourGenerateFilter::RequestData(
       vtkPolyData::SafeDownCast(outInfo->Get(vtkDataObject::DATA_OBJECT()));
 
   Threshold->SetInputData(input);
+  Threshold->SetThresholdFunction(vtkThreshold::THRESHOLD_BETWEEN);
   Threshold->SetUpperThreshold(UpperThreshold);
   Threshold->SetLowerThreshold(LowerThreshold);
+  Threshold->SetInputArrayToProcess(
+      0, 0, 0, vtkDataObject::FIELD_ASSOCIATION_POINTS, "Curvatures");
   Threshold->Update();
+
+  GeometryFilter->SetInputConnection(Threshold->GetOutputPort());
+  GeometryFilter->Update();
+
+  output->ShallowCopy(GeometryFilter->GetOutput());
 
   return 1;
 }

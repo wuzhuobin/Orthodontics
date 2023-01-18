@@ -13,12 +13,15 @@
 #define VTK_ORTHODONTICS_CONTOUR_GENERATE_FILTER_HPP
 
 // vtk
+#include <vtkGeometryFilter.h>
 #include <vtkNew.h>
 #include <vtkPolyDataAlgorithm.h>
 #include <vtkThreshold.h>
 
 class vtkOrthodonticsContourGenerateFilter : public vtkPolyDataAlgorithm {
  public:
+ vtkTypeMacro(vtkOrthodonticsContourGenerateFilter, vtkPolyDataAlgorithm);
+ static vtkOrthodonticsContourGenerateFilter* New();
   ///@{
   /**
    * Set/get the upper and lower thresholds. The default values are set to
@@ -36,6 +39,7 @@ class vtkOrthodonticsContourGenerateFilter : public vtkPolyDataAlgorithm {
   vtkNew<vtkThreshold> Threshold;
   double LowerThreshold = VTK_DOUBLE_MIN;
   double UpperThreshold = VTK_DOUBLE_MAX;
+  vtkNew<vtkGeometryFilter> GeometryFilter;
 };
 
 #endif  // ! VTK_ORTHODONTICS_CONTOUR_GENERATE_FILTER_HPP

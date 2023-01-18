@@ -20,6 +20,7 @@
 #include <vtkPlaneCollection.h>
 #include <vtkPolyData.h>
 #include <vtkPolyDataConnectivityFilter.h>
+#include <vtkProperty.h>
 #include <vtkRenderWindow.h>
 
 // qt
@@ -35,6 +36,31 @@ QBridgeVtk::QBridgeVtk(QOrthodonticsViewWidget& viewWidget,
 }
 
 void QBridgeVtk::setupConnection() {
+  setupImplicitPlaneControllerWidget();
+  setupOrthodonticsContourControllerWidget();
+
+  connect(mWidget.pushButtonSave, &QPushButton::clicked, [this]() {
+    QOrthodonticsWidget* parent = static_cast<QOrthodonticsWidget*>(sender());
+
+    auto fileName =
+        QFileDialog::getSaveFileName(parent, tr("Save Model"), QString(),
+                                     tr("STL File(*.stl);;VTK File(*.vtk)"));
+
+    if (fileName.isEmpty()) {
+      return;
+    }
+
+    if (auto* data =
+            mViewWidget.getDataSet<vtkPolyData>(QFileInfo(fileName).baseName());
+        data == nullptr ||
+        !QSaveLoadUtil::instance().savePolyData(data, fileName)) {
+      QMessageBox::critical(parent, tr("Save Failed"),
+                            tr("Cannot to save ") + fileName);
+    }
+  });
+}
+
+void QBridgeVtk::setupImplicitPlaneControllerWidget() {
   connect(mWidget.pushButtonSetupPlane, &QPushButton::toggled,
           [this](auto checked) {
             mImplicitPlaneControllerWidget.setVisible(checked);
@@ -75,31 +101,44 @@ void QBridgeVtk::setupConnection() {
 
             mViewWidget.renderWindow()->Render();
           });
-
-  setupOrthodonticsContourControllerWidget();
-
-  connect(mWidget.pushButtonSave, &QPushButton::clicked, [this]() {
-    QOrthodonticsWidget* parent = static_cast<QOrthodonticsWidget*>(sender());
-
-    auto fileName =
-        QFileDialog::getSaveFileName(parent, tr("Save Model"), QString(),
-                                     tr("STL File(*.stl);;VTK File(*.vtk)"));
-
-    if (fileName.isEmpty()) {
-      return;
-    }
-
-    if (auto* data =
-            mViewWidget.getDataSet<vtkPolyData>(QFileInfo(fileName).baseName());
-        data == nullptr ||
-        !QSaveLoadUtil::instance().savePolyData(data, fileName)) {
-      QMessageBox::critical(parent, tr("Save Failed"),
-                            tr("Cannot to save ") + fileName);
-    }
-  });
 }
 
 void QBridgeVtk::setupOrthodonticsContourControllerWidget() {
+  auto generateDraftContour = [this]() {
+    auto* lowerClippedCurvature = mViewWidget.getDataSet<vtkPolyData>(
+        "Lower+AntagonistScanClippedCurvatures");
+
+    mGenerateContour->SetInputData(lowerClippedCurvature);
+    mGenerateContour->SetLowerThreshold(
+        mContourControllerWidget.doubleSpinBoxLowerThreshold->value());
+    mGenerateContour->Update();
+
+    mViewWidget.addPolyData("DraftContour", mGenerateContour->GetOutput());
+
+    auto* draftContourActor = mViewWidget.getProp<vtkActor>("DraftContour");
+    draftContourActor->GetProperty()->SetRepresentationToWireframe();
+    draftContourActor->GetProperty()->SetColor(1, 0, 0);
+
+    mViewWidget.renderWindow()->Render();
+  };
+  connect(mWidget.pushButtonSetupContour, &QPushButton::toggled,
+          [this, generateDraftContour](auto checked) {
+            mContourControllerWidget.setVisible(checked);
+            if (checked) {
+              generateDraftContour();
+            } else {
+              if (auto draftContourProp = mViewWidget.getProp("DraftContour");
+                  draftContourProp != nullptr) {
+                draftContourProp->SetVisibility(false);
+                mViewWidget.renderWindow()->Render();
+              }
+            }
+          });
+
+  connect(mContourControllerWidget.doubleSpinBoxLowerThreshold,
+          QOverload<double>::of(&QDoubleSpinBox::valueChanged),
+          [generateDraftContour](auto /*value*/) { generateDraftContour(); });
+
   connect(mImplicitPlaneControllerWidget.pushButtonReset, &QPushButton::clicked,
           [this]() {
             auto* lowerProp3D = mViewWidget.getProp("Lower+AntagonistScan");
@@ -107,13 +146,7 @@ void QBridgeVtk::setupOrthodonticsContourControllerWidget() {
             auto* lowerClippedProp3D =
                 mViewWidget.getProp("Lower+AntagonistScanClipped");
             lowerClippedProp3D->SetVisibility(false);
-
-            mViewWidget.renderWindow()->Render();
           });
-
-  connect(
-      mWidget.pushButtonSetupContour, &QPushButton::toggled,
-      [this](auto checked) { mContourControllerWidget.setVisible(checked); });
 
   auto contourButtons = mContourControllerWidget.findChildren<QToolButton*>(
       QRegularExpression("toolButtonContour[0-9]{2}"));
@@ -126,35 +159,23 @@ void QBridgeVtk::setupOrthodonticsContourControllerWidget() {
               if (!checked) {
                 return;
               }
-              auto* lowerClippedProp3D =
+              auto* lowerClippedActor =
                   mViewWidget.getProp<vtkActor>("Lower+AntagonistScanClipped");
-              if (lowerClippedProp3D == nullptr) {
-                // return;
-                ///< @todo For testing
-                lowerClippedProp3D =
-                    mViewWidget.getProp<vtkActor>("Lower+AntagonistScan");
-              }
-              contourWidget->Initialize(lowerClippedProp3D);
+              contourWidget->Initialize(lowerClippedActor);
               mViewWidget.renderWindow()->Render();
             });
   }
 
   connect(mContourControllerWidget.pushButtonClip, &QPushButton::clicked,
-
           [this]() {
             auto* lowerClippedProp3D =
                 mViewWidget.getProp("Lower+AntagonistScanClipped");
-            if (lowerClippedProp3D == nullptr) {
-              // return;
-              ///< @todo For testing
-              lowerClippedProp3D = mViewWidget.getProp("Lower+AntagonistScan");
-            }
             lowerClippedProp3D->SetVisibility(false);
             for (auto contourWidget : mContourWidgets) {
               auto rep = contourWidget->GetContourRepresentation();
               auto clipped = contourWidget->Clip();
               if (clipped != nullptr) {
-                mViewWidget.addPolyData("abc", clipped);
+                mViewWidget.addPolyData("Teeth", clipped);
                 mViewWidget.renderWindow()->Render();
               }
             }

@@ -15,6 +15,9 @@
 // qt
 #include <QApplication>
 
+// vtk
+#include <vtkProp3D.h>
+
 // std
 #include <iostream>
 
@@ -30,9 +33,11 @@ int main(int argc, char *argv[]) {
   const auto *lowerClippedPath =
       "C:/ccode/Orthodontics/data/Lower+AntagonistScanClipped.stl";
   view.addPolyData(lowerClippedPath);
+  view.getProp("Lower+AntagonistScanClipped")->SetVisibility(false);
   const auto *lowerClippedCurvaturesPath =
       "C:/ccode/Orthodontics/data/Lower+AntagonistScanClippedCurvatures.vtk";
   view.addPolyData(lowerClippedCurvaturesPath);
+  view.getProp("Lower+AntagonistScanClippedCurvatures")->SetVisibility(false);
   ///@}
   view.show();
   view.resize(1024, 1024);

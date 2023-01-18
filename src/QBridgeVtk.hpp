@@ -16,6 +16,7 @@
 #include "QOrthodonticsImplicitPlaneControllerWidget.hpp"
 #include "QOrthodonticsViewWidget.hpp"
 #include "QOrthodonticsWidget.hpp"
+#include "vtkOrthodonticsContourGenerateFilter.hpp"
 #include "vtkOrthodonticsContourWidget.hpp"
 #include "vtkOrthodonticsImplicitPlaneWidget.hpp"
 
@@ -39,11 +40,12 @@ class QBridgeVtk : public QObject {
   QOrthodonticsViewWidget& mViewWidget;
   QOrthodonticsWidget& mWidget;
 
-  // vtkNew<vtkOrthodonticsContourWidget> mContourWidget;
+  vtkNew<vtkOrthodonticsContourGenerateFilter> mGenerateContour;
   QList<vtkSmartPointer<vtkOrthodonticsContourWidget>> mContourWidgets;
   vtkNew<vtkOrthodonticsImplicitPlaneWidget> mImplicitPlaneWidget2;
 
   void setupConnection();
+  void setupImplicitPlaneControllerWidget();
   void setupOrthodonticsContourControllerWidget();
   void enableInteractorObserver(vtkInteractorObserver* observer, bool enabled);
 };

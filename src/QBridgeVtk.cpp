@@ -124,6 +124,12 @@ void QBridgeVtk::setupOrthodonticsContourControllerWidget() {
   connect(mWidget.pushButtonSetupContour, &QPushButton::toggled,
           [this, generateDraftContour](auto checked) {
             mContourControllerWidget.setVisible(checked);
+            auto* lowerProp3D = mViewWidget.getProp("Lower+AntagonistScan");
+            lowerProp3D->SetVisibility(!checked);
+            auto* lowerClippedProp3D =
+                mViewWidget.getProp("Lower+AntagonistScanClipped");
+            lowerClippedProp3D->SetVisibility(checked);
+
             if (checked) {
               generateDraftContour();
             } else {
@@ -141,11 +147,11 @@ void QBridgeVtk::setupOrthodonticsContourControllerWidget() {
 
   connect(mImplicitPlaneControllerWidget.pushButtonReset, &QPushButton::clicked,
           [this]() {
-            auto* lowerProp3D = mViewWidget.getProp("Lower+AntagonistScan");
-            lowerProp3D->SetVisibility(true);
+            // auto* lowerProp3D = mViewWidget.getProp("Lower+AntagonistScan");
+            // lowerProp3D->SetVisibility(true);
             auto* lowerClippedProp3D =
                 mViewWidget.getProp("Lower+AntagonistScanClipped");
-            lowerClippedProp3D->SetVisibility(false);
+            lowerClippedProp3D->SetVisibility(true);
           });
 
   auto contourButtons = mContourControllerWidget.findChildren<QToolButton*>(

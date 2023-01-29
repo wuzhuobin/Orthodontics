@@ -79,9 +79,9 @@
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout_2">
      <item>
-      <widget class="QCheckBox" name="checkBoxSelectConnectivity">
+      <widget class="QCheckBox" name="checkBoxExtractRegions">
        <property name="text">
-        <string>Select Connectivity</string>
+        <string>Extract Regions</string>
        </property>
       </widget>
      </item>
@@ -99,19 +99,25 @@
       </spacer>
      </item>
      <item>
-      <widget class="QSpinBox" name="spinBoxSelectConnectivity">
+      <widget class="QSpinBox" name="spinBoxExtractRegions">
        <property name="enabled">
         <bool>false</bool>
+       </property>
+       <property name="minimum">
+        <number>0</number>
        </property>
       </widget>
      </item>
      <item>
-      <widget class="QSpinBox" name="spinBox_2">
+      <widget class="QSpinBox" name="spinBoxNumberOfRegions">
        <property name="readOnly">
         <bool>true</bool>
        </property>
        <property name="buttonSymbols">
         <enum>QAbstractSpinBox::NoButtons</enum>
+       </property>
+       <property name="maximum">
+        <number>999999999</number>
        </property>
       </widget>
      </item>

@@ -12,11 +12,14 @@
 #include "vtkOrthodonticsContourGenerateFilter.hpp"
 
 // vtk
+#include <vtkAppendPolyData.h>
 #include <vtkDataObject.h>
 #include <vtkInformation.h>
 #include <vtkInformationVector.h>
 #include <vtkObjectFactory.h>
 #include <vtkPolyData.h>
+
+// std
 
 vtkStandardNewMacro(vtkOrthodonticsContourGenerateFilter);
 
@@ -44,7 +47,48 @@ int vtkOrthodonticsContourGenerateFilter::RequestData(
   GeometryFilter->SetInputConnection(Threshold->GetOutputPort());
   GeometryFilter->Update();
 
-  output->ShallowCopy(GeometryFilter->GetOutput());
+  PolyDataConnectivityFilter->SetInputConnection(
+      GeometryFilter->GetOutputPort());
+  PolyDataConnectivityFilter->SetExtractionModeToAllRegions();
+  PolyDataConnectivityFilter->Update();
+  NumberOfExtractedRegions =
+      PolyDataConnectivityFilter->GetNumberOfExtractedRegions();
+  if (ExtractedRegions >= 0) {
+    auto morePointsFirst = [](vtkPolyData* left, vtkPolyData* right) {
+      return left->GetPoints()->GetNumberOfPoints() >
+             right->GetPoints()->GetNumberOfPoints();
+    };
+    std::vector<vtkSmartPointer<vtkPolyData>> allRegions;
+    // std::priority_queue<vtkSmartPointer<vtkPolyData>,
+    //                     std::vector<vtkSmartPointer<vtkPolyData>>,
+    //                     decltype(morePointsFirst)>
+    //     maxHeap(morePointsFirst);
+    PolyDataConnectivityFilter->SetExtractionModeToSpecifiedRegions();
+    for (auto id = 0; id < NumberOfExtractedRegions; id++) {
+      PolyDataConnectivityFilter->InitializeSpecifiedRegionList();
+      PolyDataConnectivityFilter->AddSpecifiedRegion(id);
+      PolyDataConnectivityFilter->Update();
+
+      CleanPolyData->SetInputData(PolyDataConnectivityFilter->GetOutput());
+      CleanPolyData->Update();
+
+      allRegions.push_back(vtkSmartPointer<vtkPolyData>::New());
+      allRegions[id]->ShallowCopy(CleanPolyData->GetOutput());
+      //   maxHeap.push(polyData);
+    }
+    std::nth_element(allRegions.begin(), allRegions.begin() + ExtractedRegions,
+                     allRegions.end(), morePointsFirst);
+    vtkNew<vtkAppendPolyData> appendPolyData;
+    for (auto id = 0; id <= ExtractedRegions; id++) {
+      //   appendPolyData->AddInputData(maxHeap.top());
+      //   maxHeap.pop();
+      appendPolyData->AddInputData(allRegions[id]);
+    }
+    appendPolyData->Update();
+    output->ShallowCopy(appendPolyData->GetOutput());
+  } else {
+    output->ShallowCopy(PolyDataConnectivityFilter->GetOutput());
+  }
 
   return 1;
 }

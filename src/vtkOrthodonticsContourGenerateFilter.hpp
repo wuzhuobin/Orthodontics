@@ -13,6 +13,7 @@
 #define VTK_ORTHODONTICS_CONTOUR_GENERATE_FILTER_HPP
 
 // vtk
+#include <vtkCleanPolyData.h>
 #include <vtkGeometryFilter.h>
 #include <vtkNew.h>
 #include <vtkPolyDataAlgorithm.h>
@@ -33,6 +34,10 @@ class vtkOrthodonticsContourGenerateFilter : public vtkPolyDataAlgorithm {
   vtkGetMacro(UpperThreshold, double);
   vtkGetMacro(LowerThreshold, double);
   ///@}
+  vtkGetMacro(NumberOfExtractedRegions, int);
+  vtkSetMacro(ExtractedRegions, int);
+  vtkGetMacro(ExtractedRegions, int);
+
  protected:
   int RequestData(vtkInformation* request, vtkInformationVector** inputVector,
                   vtkInformationVector* outputVector) override;
@@ -41,6 +46,10 @@ class vtkOrthodonticsContourGenerateFilter : public vtkPolyDataAlgorithm {
   double LowerThreshold = VTK_DOUBLE_MIN;
   double UpperThreshold = VTK_DOUBLE_MAX;
   vtkNew<vtkGeometryFilter> GeometryFilter;
+  vtkNew<vtkPolyDataConnectivityFilter> PolyDataConnectivityFilter;
+  vtkNew<vtkCleanPolyData> CleanPolyData;
+  int NumberOfExtractedRegions = 0;
+  int ExtractedRegions = -1;
 };
 
 #endif  // ! VTK_ORTHODONTICS_CONTOUR_GENERATE_FILTER_HPP

@@ -51,3 +51,13 @@ void QOrthodonticsContourControllerWidget::
   auto v = value * 0.01 * (max - min) + min;
   doubleSpinBoxLowerThreshold->setValue(v);
 }
+
+void QOrthodonticsContourControllerWidget::on_checkBoxExtractRegions_toggled(
+    bool checked) {
+  spinBoxExtractRegions->setEnabled(checked);
+}
+
+void QOrthodonticsContourControllerWidget::
+    on_spinBoxNumberOfRegions_valueChanged(int value) {
+  spinBoxExtractRegions->setMaximum(value - 1);
+}

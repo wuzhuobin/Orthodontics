@@ -104,6 +104,15 @@ void QBridgeVtk::setupImplicitPlaneControllerWidget() {
 }
 
 void QBridgeVtk::setupOrthodonticsContourControllerWidget() {
+  connect(mImplicitPlaneControllerWidget.pushButtonReset, &QPushButton::clicked,
+          [this]() {
+            // auto* lowerProp3D = mViewWidget.getProp("Lower+AntagonistScan");
+            // lowerProp3D->SetVisibility(true);
+            auto* lowerClippedProp3D =
+                mViewWidget.getProp("Lower+AntagonistScanClipped");
+            lowerClippedProp3D->SetVisibility(true);
+          });
+
   auto generateDraftContour = [this]() {
     auto* lowerClippedCurvature = mViewWidget.getDataSet<vtkPolyData>(
         "Lower+AntagonistScanClippedCurvatures");
@@ -111,6 +120,12 @@ void QBridgeVtk::setupOrthodonticsContourControllerWidget() {
     mGenerateContour->SetInputData(lowerClippedCurvature);
     mGenerateContour->SetLowerThreshold(
         mContourControllerWidget.doubleSpinBoxLowerThreshold->value());
+    if (mContourControllerWidget.checkBoxExtractRegions->isChecked()) {
+      mGenerateContour->SetExtractedRegions(
+          mContourControllerWidget.spinBoxExtractRegions->value());
+    } else {
+      mGenerateContour->SetExtractedRegions(-1);
+    }
     mGenerateContour->Update();
 
     mViewWidget.addPolyData("DraftContour", mGenerateContour->GetOutput());
@@ -120,7 +135,10 @@ void QBridgeVtk::setupOrthodonticsContourControllerWidget() {
     draftContourActor->GetProperty()->SetColor(1, 0, 0);
 
     mViewWidget.renderWindow()->Render();
+    mContourControllerWidget.spinBoxNumberOfRegions->setValue(
+        mGenerateContour->GetNumberOfExtractedRegions());
   };
+
   connect(mWidget.pushButtonSetupContour, &QPushButton::toggled,
           [this, generateDraftContour](auto checked) {
             mContourControllerWidget.setVisible(checked);
@@ -145,14 +163,9 @@ void QBridgeVtk::setupOrthodonticsContourControllerWidget() {
           QOverload<double>::of(&QDoubleSpinBox::valueChanged),
           [generateDraftContour](auto /*value*/) { generateDraftContour(); });
 
-  connect(mImplicitPlaneControllerWidget.pushButtonReset, &QPushButton::clicked,
-          [this]() {
-            // auto* lowerProp3D = mViewWidget.getProp("Lower+AntagonistScan");
-            // lowerProp3D->SetVisibility(true);
-            auto* lowerClippedProp3D =
-                mViewWidget.getProp("Lower+AntagonistScanClipped");
-            lowerClippedProp3D->SetVisibility(true);
-          });
+  connect(mContourControllerWidget.spinBoxExtractRegions,
+          QOverload<int>::of(&QSpinBox::valueChanged),
+          [generateDraftContour](auto /*value*/) { generateDraftContour(); });
 
   auto contourButtons = mContourControllerWidget.findChildren<QToolButton*>(
       QRegularExpression("toolButtonContour[0-9]{2}"));

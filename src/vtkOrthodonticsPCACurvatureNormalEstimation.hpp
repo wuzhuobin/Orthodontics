@@ -22,6 +22,7 @@ class vtkOrthodonticsPCACurvatureNormalEstimation
   vtkTypeMacro(vtkOrthodonticsPCACurvatureNormalEstimation,
                vtkPCANormalEstimation);
 
+ protected:
   int RequestData(vtkInformation*, vtkInformationVector**,
                   vtkInformationVector*) override;
 };

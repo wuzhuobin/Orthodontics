@@ -36,12 +36,16 @@ int vtkOrthodonticsContourGenerateFilter::RequestData(
   vtkPolyData* output =
       vtkPolyData::SafeDownCast(outInfo->Get(vtkDataObject::DATA_OBJECT()));
 
-  Threshold->SetInputData(input);
+  CurvatureNormalEstimation->SetInputData(input);
+  CurvatureNormalEstimation->SetSampleSize(10);
+  CurvatureNormalEstimation->Update();
+
+  Threshold->SetInputConnection(CurvatureNormalEstimation->GetOutputPort());
   Threshold->SetThresholdFunction(vtkThreshold::THRESHOLD_BETWEEN);
   Threshold->SetUpperThreshold(UpperThreshold);
   Threshold->SetLowerThreshold(LowerThreshold);
   Threshold->SetInputArrayToProcess(
-      0, 0, 0, vtkDataObject::FIELD_ASSOCIATION_POINTS, "Curvatures");
+      0, 0, 0, vtkDataObject::FIELD_ASSOCIATION_POINTS, "PCACurvature");
   Threshold->Update();
 
   GeometryFilter->SetInputConnection(Threshold->GetOutputPort());
@@ -59,10 +63,7 @@ int vtkOrthodonticsContourGenerateFilter::RequestData(
              right->GetPoints()->GetNumberOfPoints();
     };
     std::vector<vtkSmartPointer<vtkPolyData>> allRegions;
-    // std::priority_queue<vtkSmartPointer<vtkPolyData>,
-    //                     std::vector<vtkSmartPointer<vtkPolyData>>,
-    //                     decltype(morePointsFirst)>
-    //     maxHeap(morePointsFirst);
+
     PolyDataConnectivityFilter->SetExtractionModeToSpecifiedRegions();
     for (auto id = 0; id < NumberOfExtractedRegions; id++) {
       PolyDataConnectivityFilter->InitializeSpecifiedRegionList();
@@ -74,14 +75,11 @@ int vtkOrthodonticsContourGenerateFilter::RequestData(
 
       allRegions.push_back(vtkSmartPointer<vtkPolyData>::New());
       allRegions[id]->ShallowCopy(CleanPolyData->GetOutput());
-      //   maxHeap.push(polyData);
     }
     std::nth_element(allRegions.begin(), allRegions.begin() + ExtractedRegions,
                      allRegions.end(), morePointsFirst);
     vtkNew<vtkAppendPolyData> appendPolyData;
     for (auto id = 0; id <= ExtractedRegions; id++) {
-      //   appendPolyData->AddInputData(maxHeap.top());
-      //   maxHeap.pop();
       appendPolyData->AddInputData(allRegions[id]);
     }
     appendPolyData->Update();

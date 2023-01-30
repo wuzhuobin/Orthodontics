@@ -12,6 +12,8 @@
 #ifndef VTK_ORTHODONTICS_CONTOUR_GENERATE_FILTER_HPP
 #define VTK_ORTHODONTICS_CONTOUR_GENERATE_FILTER_HPP
 
+#include "vtkOrthodonticsPCACurvatureNormalEstimation.hpp"
+
 // vtk
 #include <vtkCleanPolyData.h>
 #include <vtkGeometryFilter.h>
@@ -20,6 +22,10 @@
 #include <vtkPolyDataConnectivityFilter.h>
 #include <vtkThreshold.h>
 
+/**
+ * @brief
+ * @todo The curvature calculation is not correct.
+ */
 class vtkOrthodonticsContourGenerateFilter : public vtkPolyDataAlgorithm {
  public:
   vtkTypeMacro(vtkOrthodonticsContourGenerateFilter, vtkPolyDataAlgorithm);
@@ -42,6 +48,7 @@ class vtkOrthodonticsContourGenerateFilter : public vtkPolyDataAlgorithm {
   int RequestData(vtkInformation* request, vtkInformationVector** inputVector,
                   vtkInformationVector* outputVector) override;
 
+  vtkNew<vtkOrthodonticsPCACurvatureNormalEstimation> CurvatureNormalEstimation;
   vtkNew<vtkThreshold> Threshold;
   double LowerThreshold = VTK_DOUBLE_MIN;
   double UpperThreshold = VTK_DOUBLE_MAX;

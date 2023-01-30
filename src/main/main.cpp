@@ -28,16 +28,11 @@ int main(int argc, char *argv[]) {
   QOrthodonticsViewWidget view;
   ///@{
   ///< tesing
-  const auto *lowerPath = "C:/ccode/Orthodontics/data/Lower+AntagonistScan.stl";
+  const auto *lowerPath = "C:/ccode/Orthodontics/data/Data.vtk";
   view.addPolyData(lowerPath);
-  const auto *lowerClippedPath =
-      "C:/ccode/Orthodontics/data/Lower+AntagonistScanClipped.stl";
+  const auto *lowerClippedPath = "C:/ccode/Orthodontics/data/DataClipped.vtk";
   view.addPolyData(lowerClippedPath);
-  view.getProp("Lower+AntagonistScanClipped")->SetVisibility(false);
-  const auto *lowerClippedCurvaturesPath =
-      "C:/ccode/Orthodontics/data/Lower+AntagonistScanClippedCurvatures.vtk";
-  view.addPolyData(lowerClippedCurvaturesPath);
-  view.getProp("Lower+AntagonistScanClippedCurvatures")->SetVisibility(false);
+  view.getProp("DataClipped")->SetVisibility(false);
   ///@}
   view.show();
   view.resize(1024, 1024);

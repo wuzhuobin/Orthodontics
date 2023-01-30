@@ -64,25 +64,23 @@ void QBridgeVtk::setupImplicitPlaneControllerWidget() {
   connect(mWidget.pushButtonSetupPlane, &QPushButton::toggled,
           [this](auto checked) {
             mImplicitPlaneControllerWidget.setVisible(checked);
-            auto* lowerPolyData =
-                mViewWidget.getDataSet<vtkPolyData>("Lower+AntagonistScan");
+            auto* dataPolyData = mViewWidget.getDataSet<vtkPolyData>("Data");
             enableInteractorObserver(mImplicitPlaneWidget2, checked);
-            mImplicitPlaneWidget2->Initialize(lowerPolyData);
+            mImplicitPlaneWidget2->Initialize(dataPolyData);
 
             mViewWidget.renderWindow()->Render();
           });
 
   connect(mImplicitPlaneControllerWidget.pushButtonClip, &QPushButton::clicked,
           [this]() {
-            auto* lowerProp3D = mViewWidget.getProp("Lower+AntagonistScan");
-            lowerProp3D->SetVisibility(false);
+            auto* dataProp3D = mViewWidget.getProp("Data");
+            dataProp3D->SetVisibility(false);
             auto* plane = mImplicitPlaneWidget2->GetImplicitPlane();
             vtkNew<vtkPlaneCollection> planeCollection;
             planeCollection->AddItem(plane);
-            auto* lowerPolyData =
-                mViewWidget.getDataSet<vtkPolyData>("Lower+AntagonistScan");
+            auto* dataPolyData = mViewWidget.getDataSet<vtkPolyData>("Data");
             vtkNew<vtkClipClosedSurface> clipClosedSurface;
-            clipClosedSurface->SetInputData(lowerPolyData);
+            clipClosedSurface->SetInputData(dataPolyData);
             clipClosedSurface->SetClippingPlanes(planeCollection);
             clipClosedSurface->Update();
             vtkNew<vtkPolyDataConnectivityFilter> polyDataConnectivityFilter;
@@ -96,7 +94,7 @@ void QBridgeVtk::setupImplicitPlaneControllerWidget() {
                 polyDataConnectivityFilter->GetOutputPort());
             fillHolesFilter->SetHoleSize(100);
             fillHolesFilter->Update();
-            mViewWidget.addPolyData("Lower+AntagonistScanClipped",
+            mViewWidget.addPolyData("DataClipped",
                                     fillHolesFilter->GetOutput());
 
             mViewWidget.renderWindow()->Render();
@@ -106,18 +104,16 @@ void QBridgeVtk::setupImplicitPlaneControllerWidget() {
 void QBridgeVtk::setupOrthodonticsContourControllerWidget() {
   connect(mImplicitPlaneControllerWidget.pushButtonReset, &QPushButton::clicked,
           [this]() {
-            // auto* lowerProp3D = mViewWidget.getProp("Lower+AntagonistScan");
-            // lowerProp3D->SetVisibility(true);
-            auto* lowerClippedProp3D =
-                mViewWidget.getProp("Lower+AntagonistScanClipped");
-            lowerClippedProp3D->SetVisibility(true);
+            // auto* dataProp3D = mViewWidget.getProp("Data");
+            // dataProp3D->SetVisibility(true);
+            auto* dataClippedProp3D = mViewWidget.getProp("DataClipped");
+            dataClippedProp3D->SetVisibility(true);
           });
 
   auto generateDraftContour = [this]() {
-    auto* lowerClippedCurvature = mViewWidget.getDataSet<vtkPolyData>(
-        "Lower+AntagonistScanClippedCurvatures");
+    auto* dataClipped = mViewWidget.getDataSet<vtkPolyData>("DataClipped");
 
-    mGenerateContour->SetInputData(lowerClippedCurvature);
+    mGenerateContour->SetInputData(dataClipped);
     mGenerateContour->SetLowerThreshold(
         mContourControllerWidget.doubleSpinBoxLowerThreshold->value());
     if (mContourControllerWidget.checkBoxExtractRegions->isChecked()) {
@@ -142,11 +138,10 @@ void QBridgeVtk::setupOrthodonticsContourControllerWidget() {
   connect(mWidget.pushButtonSetupContour, &QPushButton::toggled,
           [this, generateDraftContour](auto checked) {
             mContourControllerWidget.setVisible(checked);
-            auto* lowerProp3D = mViewWidget.getProp("Lower+AntagonistScan");
-            lowerProp3D->SetVisibility(!checked);
-            auto* lowerClippedProp3D =
-                mViewWidget.getProp("Lower+AntagonistScanClipped");
-            lowerClippedProp3D->SetVisibility(checked);
+            auto* dataProp3D = mViewWidget.getProp("Data");
+            dataProp3D->SetVisibility(!checked);
+            auto* dataClippedProp3D = mViewWidget.getProp("DataClipped");
+            dataClippedProp3D->SetVisibility(checked);
 
             if (checked) {
               generateDraftContour();
@@ -178,18 +173,17 @@ void QBridgeVtk::setupOrthodonticsContourControllerWidget() {
               if (!checked) {
                 return;
               }
-              auto* lowerClippedActor =
-                  mViewWidget.getProp<vtkActor>("Lower+AntagonistScanClipped");
-              contourWidget->Initialize(lowerClippedActor);
+              auto* dataClippedActor =
+                  mViewWidget.getProp<vtkActor>("DataClipped");
+              contourWidget->Initialize(dataClippedActor);
               mViewWidget.renderWindow()->Render();
             });
   }
 
   connect(mContourControllerWidget.pushButtonClip, &QPushButton::clicked,
           [this]() {
-            auto* lowerClippedProp3D =
-                mViewWidget.getProp("Lower+AntagonistScanClipped");
-            lowerClippedProp3D->SetVisibility(false);
+            auto* dataClippedProp3D = mViewWidget.getProp("DataClipped");
+            dataClippedProp3D->SetVisibility(false);
             for (auto contourWidget : mContourWidgets) {
               auto rep = contourWidget->GetContourRepresentation();
               auto clipped = contourWidget->Clip();

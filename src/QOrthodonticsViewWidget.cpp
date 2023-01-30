@@ -76,6 +76,7 @@ vtkActor *QOrthodonticsViewWidget::renderPolyData(const QString &name,
 
   vtkNew<vtkPolyDataMapper> polyDataMapper;
   polyDataMapper->SetInputData(polyData);
+  polyDataMapper->SetScalarVisibility(false);
   polyDataMapper->Update();
 
   vtkNew<vtkActor> actor;

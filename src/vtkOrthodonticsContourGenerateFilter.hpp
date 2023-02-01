@@ -28,8 +28,8 @@
  */
 class vtkOrthodonticsContourGenerateFilter : public vtkPolyDataAlgorithm {
  public:
-  vtkTypeMacro(vtkOrthodonticsContourGenerateFilter, vtkPolyDataAlgorithm);
   static vtkOrthodonticsContourGenerateFilter* New();
+  vtkTypeMacro(vtkOrthodonticsContourGenerateFilter, vtkPolyDataAlgorithm);
   ///@{
   /**
    * Set/get the upper and lower thresholds. The default values are set to
@@ -50,8 +50,8 @@ class vtkOrthodonticsContourGenerateFilter : public vtkPolyDataAlgorithm {
 
   vtkNew<vtkOrthodonticsPCACurvatureNormalEstimation> CurvatureNormalEstimation;
   vtkNew<vtkThreshold> Threshold;
-  double LowerThreshold = VTK_DOUBLE_MIN;
-  double UpperThreshold = VTK_DOUBLE_MAX;
+  double UpperThreshold = std::numeric_limits<double>::infinity();
+  double LowerThreshold = -std::numeric_limits<double>::infinity();
   vtkNew<vtkGeometryFilter> GeometryFilter;
   vtkNew<vtkPolyDataConnectivityFilter> PolyDataConnectivityFilter;
   vtkNew<vtkCleanPolyData> CleanPolyData;

@@ -32,6 +32,13 @@
 QBridgeVtk::QBridgeVtk(QOrthodonticsViewWidget& viewWidget,
                        QOrthodonticsWidget& widget, QObject* parent)
     : QObject(parent), mViewWidget(viewWidget), mWidget(widget) {
+  auto contourButtons = mContourControllerWidget.findChildren<QToolButton*>(
+      QRegularExpression("toolButtonContour[0-9]{2}"));
+  for (const auto& contourButton : contourButtons) {
+    mContourWidgets << vtkSmartPointer<vtkOrthodonticsContourWidget>::New();
+    mContourExtractionFilters
+        << vtkSmartPointer<vtkOrthodonticsContourExtractionFilter>::New();
+  }
   setupConnection();
 }
 
@@ -133,11 +140,11 @@ void QBridgeVtk::setupOrthodonticsContourControllerWidget() {
     }
     mGenerateContour->Update();
 
-    mViewWidget.addPolyData("DraftContour", mGenerateContour->GetOutput());
+    mViewWidget.addPolyData("DraftContours", mGenerateContour->GetOutput());
 
-    auto* draftContourActor = mViewWidget.getProp<vtkActor>("DraftContour");
-    draftContourActor->GetProperty()->SetRepresentationToWireframe();
-    draftContourActor->GetProperty()->SetColor(1, 0, 0);
+    auto* draftContoursActor = mViewWidget.getProp<vtkActor>("DraftContours");
+    draftContoursActor->GetProperty()->SetRepresentationToWireframe();
+    draftContoursActor->GetProperty()->SetColor(1, 0, 0);
 
     mViewWidget.renderWindow()->Render();
     mContourControllerWidget.spinBoxNumberOfRegions->setValue(
@@ -155,9 +162,9 @@ void QBridgeVtk::setupOrthodonticsContourControllerWidget() {
             if (checked) {
               generateDraftContour();
             } else {
-              if (auto draftContourProp = mViewWidget.getProp("DraftContour");
-                  draftContourProp != nullptr) {
-                draftContourProp->SetVisibility(false);
+              if (auto draftContoursProp = mViewWidget.getProp("DraftContours");
+                  draftContoursProp != nullptr) {
+                draftContoursProp->SetVisibility(false);
                 mViewWidget.renderWindow()->Render();
               }
             }
@@ -171,11 +178,38 @@ void QBridgeVtk::setupOrthodonticsContourControllerWidget() {
           QOverload<int>::of(&QSpinBox::valueChanged),
           [generateDraftContour](auto /*value*/) { generateDraftContour(); });
 
+  connect(
+      mContourControllerWidget.pushButtonContourExtraction,
+      &QPushButton::clicked, [this]() {
+        if (auto draftContoursProp = mViewWidget.getProp("DraftContours");
+            draftContoursProp != nullptr) {
+          draftContoursProp->SetVisibility(false);
+        }
+        auto* dataClippedPolyData =
+            mViewWidget.getDataSet<vtkPolyData>("DataClipped");
+        // 2-15, 18-31
+        for (auto i = 2; i <= 15; ++i) {
+          mContourExtractionFilters[i - 2]->SetInputData(dataClippedPolyData);
+          mContourExtractionFilters[i - 2]->SetPointDataArrayName(
+              "PredictedID");
+          mContourExtractionFilters[i - 2]->SetLabel(i);
+          mContourExtractionFilters[i - 2]->Update();
+          mViewWidget.addPolyData(
+              "DataContour" + QString::number(i),
+              mContourExtractionFilters[i - 2]->GetOutput());
+          auto* dataContourActor =
+              mViewWidget.getProp<vtkActor>("DataContour" + QString::number(i));
+          dataContourActor->GetProperty()->SetRepresentationToWireframe();
+          dataContourActor->GetProperty()->SetColor(1, 0, 0);
+        }
+        mViewWidget.renderWindow()->Render();
+      });
+
   auto contourButtons = mContourControllerWidget.findChildren<QToolButton*>(
       QRegularExpression("toolButtonContour[0-9]{2}"));
-  for (const auto& contourButton : contourButtons) {
-    auto contourWidget = vtkSmartPointer<vtkOrthodonticsContourWidget>::New();
-    mContourWidgets << contourWidget;
+  for (auto i = 0; i < contourButtons.size(); ++i) {
+    auto contourButton = contourButtons[i];
+    auto contourWidget = mContourWidgets[i];
     connect(contourButton, &QToolButton::toggled,
             [contourWidget, this](auto checked) {
               enableInteractorObserver(contourWidget, checked);

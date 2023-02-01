@@ -16,6 +16,7 @@
 #include "QOrthodonticsImplicitPlaneControllerWidget.hpp"
 #include "QOrthodonticsViewWidget.hpp"
 #include "QOrthodonticsWidget.hpp"
+#include "vtkOrthodonticsContourExtractionFilter.hpp"
 #include "vtkOrthodonticsContourGenerateFilter.hpp"
 #include "vtkOrthodonticsContourWidget.hpp"
 #include "vtkOrthodonticsImplicitPlaneWidget.hpp"
@@ -41,6 +42,8 @@ class QBridgeVtk : public QObject {
   QOrthodonticsWidget& mWidget;
 
   vtkNew<vtkOrthodonticsContourGenerateFilter> mGenerateContour;
+  QList<vtkSmartPointer<vtkOrthodonticsContourExtractionFilter>>
+      mContourExtractionFilters;
   QList<vtkSmartPointer<vtkOrthodonticsContourWidget>> mContourWidgets;
   vtkNew<vtkOrthodonticsImplicitPlaneWidget> mImplicitPlaneWidget2;
 

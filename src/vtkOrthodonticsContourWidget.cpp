@@ -34,28 +34,28 @@ void vtkOrthodonticsContourWidget::Initialize(vtkActor* prop) {
   PolygonalSurfacePointPlacer->AddProp(prop);
 
   if (prop == nullptr && prop->GetMapper() == nullptr) {
-    vtkWarningMacro("Clippee is not valid.");
+    vtkWarningMacro(<< "Clippee is not valid.");
     return;
   }
 
   Clippee = vtkPolyData::SafeDownCast(prop->GetMapper()->GetInput());
 
   if (Clippee == nullptr) {
-    vtkWarningMacro("Clippee is not valid.");
+    vtkWarningMacro(<< "Clippee is not valid.");
     return;
   }
 }
 
 vtkPolyData* vtkOrthodonticsContourWidget::Clip() {
   if (Clippee == nullptr) {
-    vtkWarningMacro("Clippee is not valid.");
+    vtkWarningMacro(<< "Clippee is not valid.");
     return nullptr;
   }
 
   auto contour = GetOrientedGlyphContourRepresentation()
                      ->GetContourRepresentationAsPolyData();
   if (contour == nullptr) {
-    vtkWarningMacro("Contour is not valid.");
+    vtkWarningMacro(<< "Contour is not valid.");
     return nullptr;
   }
 
@@ -117,7 +117,7 @@ vtkPolyData* vtkOrthodonticsContourWidget::Clip() {
   polyDataConnectivityFilter->Update();
   auto numOfRegions = polyDataConnectivityFilter->GetNumberOfExtractedRegions();
   if (numOfRegions != 2) {
-    vtkWarningMacro("Invalid contour.");
+    vtkWarningMacro(<< "Invalid contour.");
     return nullptr;
   }
   polyDataConnectivityFilter->AddSpecifiedRegion(1);

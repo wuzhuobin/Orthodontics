@@ -99,6 +99,15 @@ void QBridgeVtk::setupImplicitPlaneControllerWidget() {
 
             mViewWidget.renderWindow()->Render();
           });
+  connect(mImplicitPlaneControllerWidget.pushButtonReset, &QPushButton::clicked,
+          [this]() {
+            auto* dataProp3D = mViewWidget.getProp("Data");
+            dataProp3D->SetVisibility(true);
+            auto* dataClippedProp3D = mViewWidget.getProp("DataClipped");
+            if (dataClippedProp3D != nullptr) {
+              dataClippedProp3D->SetVisibility(false);
+            }
+          });
 }
 
 void QBridgeVtk::setupOrthodonticsContourControllerWidget() {

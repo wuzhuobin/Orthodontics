@@ -23,7 +23,7 @@ class vtkOrthodonticsContourWidget : public vtkContourWidget {
  public:
   static vtkOrthodonticsContourWidget* New();
   vtkTypeMacro(vtkOrthodonticsContourWidget, vtkContourWidget);
-  virtual void Initialize(vtkActor* prop);
+  virtual void Initialize(vtkActor* prop, vtkPolyData* points = nullptr);
   virtual vtkPolyData* Clip();
 
  protected:

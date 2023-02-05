@@ -13,23 +13,28 @@
 #include <vtkActor.h>
 #include <vtkCleanPolyData.h>
 #include <vtkCommand.h>
+#include <vtkDecimatePolylineFilter.h>
 #include <vtkIdList.h>
 #include <vtkMapper.h>
 #include <vtkObjectFactory.h>
 #include <vtkOrientedGlyphContourRepresentation.h>
 #include <vtkPoints.h>
+#include <vtkPolyDataCollection.h>
 #include <vtkPolyDataConnectivityFilter.h>
+#include <vtkPolyDataNormals.h>
 #include <vtkPolygonalSurfaceContourLineInterpolator.h>
 #include <vtkPolygonalSurfacePointPlacer.h>
 #include <vtkProperty.h>
 #include <vtkSphereSource.h>
+#include <vtkStripper.h>
 #include <vtkTriangleFilter.h>
 #include <vtkWidgetCallbackMapper.h>
 #include <vtkWidgetEvent.h>
 
 vtkStandardNewMacro(vtkOrthodonticsContourWidget);
 
-void vtkOrthodonticsContourWidget::Initialize(vtkActor* prop) {
+void vtkOrthodonticsContourWidget::Initialize(vtkActor* prop,
+                                              vtkPolyData* points) {
   PolygonalSurfacePointPlacer->RemoveAllProps();
   PolygonalSurfacePointPlacer->AddProp(prop);
 
@@ -44,6 +49,66 @@ void vtkOrthodonticsContourWidget::Initialize(vtkActor* prop) {
     vtkWarningMacro(<< "Clippee is not valid.");
     return;
   }
+
+  vtkNew<vtkPolyDataNormals> polyDataNormals;
+  polyDataNormals->SetInputData(Clippee);
+  polyDataNormals->SetComputeCellNormals(true);
+  polyDataNormals->SetComputePointNormals(true);
+  polyDataNormals->Update();
+  Clippee->ShallowCopy(polyDataNormals->GetOutput());
+
+  // For initialization.
+  PolygonalSurfacePointPlacer->GetPolys()->AddItem(Clippee);
+
+  if (points == nullptr || points->GetNumberOfPoints() < 3) {
+    return;
+  }
+
+  ///@{
+  // Find the largest cell.
+  vtkNew<vtkStripper> stripper;
+  stripper->SetInputData(points);
+  stripper->Update();
+
+  vtkNew<vtkDecimatePolylineFilter> decimatePolylineFilter;
+  decimatePolylineFilter->SetInputConnection(stripper->GetOutputPort());
+  decimatePolylineFilter->SetTargetReduction(0.95);
+  decimatePolylineFilter->Update();
+  auto intermediate = decimatePolylineFilter->GetOutput();
+
+  vtkIdType cellIdWithMostPoints = 0;
+  for (auto cid = 0; cid < intermediate->GetNumberOfCells(); ++cid) {
+    if (intermediate->GetCell(cellIdWithMostPoints)->GetNumberOfPoints() <
+        intermediate->GetCell(cid)->GetNumberOfPoints()) {
+      cellIdWithMostPoints = cid;
+    }
+  }
+  auto cellWithMostPoints = intermediate->GetCell(cellIdWithMostPoints);
+  ///@}
+
+  ///@{
+  // Reorder the points.
+  auto* newCell = cellWithMostPoints->NewInstance();
+  points->Reset();
+  points->Allocate();
+  vtkNew<vtkPoints> newPoints;
+  vtkNew<vtkIdList> newIdList;
+  for (auto cpid = 0; cpid < cellWithMostPoints->GetNumberOfPoints(); ++cpid) {
+    newCell->GetPointIds()->InsertNextId(cpid);
+    auto pid = cellWithMostPoints->GetPointId(cpid);
+    auto point = intermediate->GetPoint(pid);
+    newPoints->InsertNextPoint(point);
+    // Update the line.
+    auto foundPointId = Clippee->FindPoint(point);
+    newIdList->InsertNextId(foundPointId);
+  }
+  points->InsertNextCell(newCell->GetCellType(), newCell->GetPointIds());
+  newCell->Delete();
+  points->SetPoints(newPoints);
+  ///@}
+
+  vtkContourWidget::Initialize(points, 1, newIdList);
+  CloseLoop();
 }
 
 vtkPolyData* vtkOrthodonticsContourWidget::Clip() {
@@ -86,12 +151,7 @@ vtkPolyData* vtkOrthodonticsContourWidget::Clip() {
   auto clippeePoints = clippee->GetPoints();
   vtkNew<vtkPoints> newPoints;
   newPoints->DeepCopy(clippeePoints);
-  // for (auto pid = 0; pid < clippeePoints->GetNumberOfPoints(); pid++) {
-  //   if (toBeRemovedPointIds->FindIdLocation(pid) != -1) {
-  //     continue;
-  //   }
-  //   newPoints->InsertNextPoint(clippeePoints->GetPoint(pid));
-  // }
+
   ClippedClippee = PolyDataPtr::New();
   ClippedClippee->SetPoints(newPoints);
   ClippedClippee->Allocate();

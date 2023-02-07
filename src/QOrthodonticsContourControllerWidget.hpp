@@ -32,6 +32,8 @@ class QOrthodonticsContourControllerWidget
   Q_SLOT void on_horizontalSliderLowerThreshold_valueChanged(int value);
   Q_SLOT void on_checkBoxExtractRegions_toggled(bool checked);
   Q_SLOT void on_spinBoxNumberOfRegions_valueChanged(int value);
+  Q_SLOT void on_pushButtonEnableAll_clicked(bool checked = false);
+  Q_SLOT void on_pushButtonDisableAll_clicked(bool checked = false);
 };
 
 #endif  //! Q_ORTHODONTICS_CONTOUR_CONTROLLER_WIDGET_HPP

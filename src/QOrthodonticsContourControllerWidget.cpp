@@ -61,3 +61,19 @@ void QOrthodonticsContourControllerWidget::
     on_spinBoxNumberOfRegions_valueChanged(int value) {
   spinBoxExtractRegions->setMaximum(value - 1);
 }
+
+void QOrthodonticsContourControllerWidget::on_pushButtonEnableAll_clicked(
+    bool checked) {
+  auto buttons = buttonGroupContour->buttons();
+  for (auto button : buttons) {
+    button->setChecked(true);
+  }
+}
+
+void QOrthodonticsContourControllerWidget::on_pushButtonDisableAll_clicked(
+    bool checked) {
+  auto buttons = buttonGroupContour->buttons();
+  for (auto button : buttons) {
+    button->setChecked(false);
+  }
+}

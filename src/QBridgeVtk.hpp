@@ -26,7 +26,9 @@
 
 // vtk
 #include <vtkNew.h>
-#include <vtkSmartPointer.h>
+
+// std
+#include <array>
 
 class QBridgeVtk : public QObject {
   Q_OBJECT
@@ -36,21 +38,22 @@ class QBridgeVtk : public QObject {
                       QOrthodonticsWidget& widget, QObject* parent = nullptr);
 
  private:
+  void setupConnection();
+  void setupImplicitPlaneControllerWidget();
+  void setupOrthodonticsContourControllerWidget();
+  void enableInteractorObserver(vtkInteractorObserver* observer, bool enabled);
+
+  static constexpr int GNumberOfTeeth = 32;
   QOrthodonticsImplicitPlaneControllerWidget mImplicitPlaneControllerWidget;
   QOrthodonticsContourControllerWidget mContourControllerWidget;
   QOrthodonticsViewWidget& mViewWidget;
   QOrthodonticsWidget& mWidget;
 
-  vtkNew<vtkOrthodonticsContourGenerateFilter> mGenerateContour;
-  QList<vtkSmartPointer<vtkOrthodonticsContourExtractionFilter>>
-      mContourExtractionFilters;
-  QList<vtkSmartPointer<vtkOrthodonticsContourWidget>> mContourWidgets;
   vtkNew<vtkOrthodonticsImplicitPlaneWidget> mImplicitPlaneWidget2;
-
-  void setupConnection();
-  void setupImplicitPlaneControllerWidget();
-  void setupOrthodonticsContourControllerWidget();
-  void enableInteractorObserver(vtkInteractorObserver* observer, bool enabled);
+  vtkNew<vtkOrthodonticsContourGenerateFilter> mGenerateContour;
+  std::array<vtkNew<vtkOrthodonticsContourExtractionFilter>, GNumberOfTeeth>
+      mContourExtractionFilters;
+  std::array<vtkNew<vtkOrthodonticsContourWidget>, 32> mContourWidgets;
 };
 
 #endif  //! Q_BRIDGE_VTK_HPP

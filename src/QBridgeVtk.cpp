@@ -32,13 +32,6 @@
 QBridgeVtk::QBridgeVtk(QOrthodonticsViewWidget& viewWidget,
                        QOrthodonticsWidget& widget, QObject* parent)
     : QObject(parent), mViewWidget(viewWidget), mWidget(widget) {
-  auto contourButtons = mContourControllerWidget.findChildren<QToolButton*>(
-      QRegularExpression("toolButtonContour[0-9]{2}"));
-  for (const auto& contourButton : contourButtons) {
-    mContourWidgets << vtkSmartPointer<vtkOrthodonticsContourWidget>::New();
-    mContourExtractionFilters
-        << vtkSmartPointer<vtkOrthodonticsContourExtractionFilter>::New();
-  }
   setupConnection();
 }
 
@@ -159,15 +152,17 @@ void QBridgeVtk::setupOrthodonticsContourControllerWidget() {
             auto* dataClippedProp3D = mViewWidget.getProp("DataClipped");
             dataClippedProp3D->SetVisibility(checked);
 
-            if (checked) {
-              generateDraftContour();
-            } else {
-              if (auto draftContoursProp = mViewWidget.getProp("DraftContours");
-                  draftContoursProp != nullptr) {
-                draftContoursProp->SetVisibility(false);
-                mViewWidget.renderWindow()->Render();
-              }
-            }
+            ///< @todo Disable this to speed up. The algorithm is not work.
+            // if (checked) {
+            //   generateDraftContour();
+            // } else {
+            //   if (auto draftContoursProp =
+            //   mViewWidget.getProp("DraftContours");
+            //       draftContoursProp != nullptr) {
+            //     draftContoursProp->SetVisibility(false);
+            //     mViewWidget.renderWindow()->Render();
+            //   }
+            // }
           });
 
   connect(mContourControllerWidget.doubleSpinBoxLowerThreshold,
@@ -188,15 +183,13 @@ void QBridgeVtk::setupOrthodonticsContourControllerWidget() {
         auto* dataClippedPolyData =
             mViewWidget.getDataSet<vtkPolyData>("DataClipped");
         // 2-15, 18-31
-        for (auto i = 2; i <= 15; ++i) {
-          mContourExtractionFilters[i - 2]->SetInputData(dataClippedPolyData);
-          mContourExtractionFilters[i - 2]->SetPointDataArrayName(
-              "PredictedID");
-          mContourExtractionFilters[i - 2]->SetLabel(i);
-          mContourExtractionFilters[i - 2]->Update();
-          mViewWidget.addPolyData(
-              "DataContour" + QString::number(i),
-              mContourExtractionFilters[i - 2]->GetOutput());
+        for (auto i = 0; i < GNumberOfTeeth; i++) {
+          mContourExtractionFilters[i]->SetInputData(dataClippedPolyData);
+          mContourExtractionFilters[i]->SetPointDataArrayName("PredictedID");
+          mContourExtractionFilters[i]->SetLabel(i + 1);
+          mContourExtractionFilters[i]->Update();
+          mViewWidget.addPolyData("DataContour" + QString::number(i),
+                                  mContourExtractionFilters[i]->GetOutput());
           auto* dataContourActor =
               mViewWidget.getProp<vtkActor>("DataContour" + QString::number(i));
           dataContourActor->GetProperty()->SetRepresentationToWireframe();
@@ -205,29 +198,33 @@ void QBridgeVtk::setupOrthodonticsContourControllerWidget() {
         mViewWidget.renderWindow()->Render();
       });
 
-  auto contourButtons = mContourControllerWidget.findChildren<QToolButton*>(
-      QRegularExpression("toolButtonContour[0-9]{2}"));
-  for (auto i = 0; i < contourButtons.size(); ++i) {
-    auto contourButton = contourButtons[i];
-    auto contourWidget = mContourWidgets[i];
-    connect(contourButton, &QToolButton::toggled,
-            [contourWidget, this](auto checked) {
-              enableInteractorObserver(contourWidget, checked);
-              if (!checked) {
-                return;
-              }
-              auto* dataClippedActor =
-                  mViewWidget.getProp<vtkActor>("DataClipped");
-              contourWidget->Initialize(dataClippedActor);
-              mViewWidget.renderWindow()->Render();
-            });
+  for (auto side = 0; side < GNumberOfTeeth / 8; side++) {
+    for (auto [i, b] = std::make_tuple(0 + side * 8, 1); i < (side + 1) * 8;
+         i++, b++) {
+      auto contourButton = mContourControllerWidget.findChild<QToolButton*>(
+          "toolButtonContour" + QString::number(side + 1) + QString::number(b));
+      connect(contourButton, &QToolButton::toggled, [this, i](auto checked) {
+        auto& contourWidget = mContourWidgets[i];
+        enableInteractorObserver(contourWidget, checked);
+        if (!checked) {
+          return;
+        }
+        if (contourWidget->GetWidgetState() != vtkContourWidget::Manipulate) {
+          auto* dataClippedActor = mViewWidget.getProp<vtkActor>("DataClipped");
+          auto* dataContour = mViewWidget.getDataSet<vtkPolyData>(
+              "DataContour" + QString::number(i));
+          contourWidget->Initialize(dataClippedActor, dataContour);
+        }
+        mViewWidget.renderWindow()->Render();
+      });
+    }
   }
 
   connect(mContourControllerWidget.pushButtonClip, &QPushButton::clicked,
           [this]() {
             auto* dataClippedProp3D = mViewWidget.getProp("DataClipped");
             dataClippedProp3D->SetVisibility(false);
-            for (auto contourWidget : mContourWidgets) {
+            for (auto& contourWidget : mContourWidgets) {
               auto rep = contourWidget->GetContourRepresentation();
               auto clipped = contourWidget->Clip();
               if (clipped != nullptr) {

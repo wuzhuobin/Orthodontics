@@ -148,18 +148,13 @@ struct GenerateCurvatureNormals {
 
       // Finally compute the curvatures
       // PCL method:
-      // float eig_sum = a0[0] + a1[0] + a2[0];
-
-      // *c++ = eig_sum == 0 ? 0
-      //                     : std::sqrtf(eVal[0] * eVal[0] / eig_sum / eig_sum
-      //                     +
-      //                                  eVal[1] * eVal[1] / eig_sum / eig_sum
-      //                                  + eVal[2] * eVal[2] / eig_sum /
-      //                                  eig_sum);
-
-      // I don't know why
-      *c++ = 1 / std::sqrtf(eVal[0] * eVal[0] + eVal[1] * eVal[1] +
-                            eVal[2] * eVal[2]);
+      // https://pcl.readthedocs.io/en/latest/normal_estimation.html
+      float eig_sum = eVal[0] + eVal[1] + eVal[2];
+      if (eig_sum != 0.0) {
+        *c++ = std::abs(eVal[2] / eig_sum);
+      } else {
+        *c++ = 0.0;
+      }
       // Finally compute the point normal (which is the smallest eigenvector)
       *n++ = flipVal * eVecMin[0];
       *n++ = flipVal * eVecMin[1];

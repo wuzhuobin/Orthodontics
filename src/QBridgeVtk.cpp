@@ -224,14 +224,16 @@ void QBridgeVtk::setupOrthodonticsContourControllerWidget() {
           [this]() {
             auto* dataClippedProp3D = mViewWidget.getProp("DataClipped");
             dataClippedProp3D->SetVisibility(false);
-            for (auto& contourWidget : mContourWidgets) {
+            for (auto i = 0; i < GNumberOfTeeth; i++) {
+              auto& contourWidget = mContourWidgets[i];
               auto rep = contourWidget->GetContourRepresentation();
               auto clipped = contourWidget->Clip();
               if (clipped != nullptr) {
-                mViewWidget.addPolyData("Teeth", clipped);
-                mViewWidget.renderWindow()->Render();
+                mViewWidget.addPolyData("Tooth" + QString::number(i), clipped);
               }
+              enableInteractorObserver(contourWidget, false);
             }
+            mViewWidget.renderWindow()->Render();
           });
 }
 

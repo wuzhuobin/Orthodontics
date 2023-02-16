@@ -176,14 +176,25 @@ vtkPolyData* vtkOrthodonticsContourWidget::Clip() {
   polyDataConnectivityFilter->SetExtractionMode(VTK_EXTRACT_ALL_REGIONS);
   polyDataConnectivityFilter->Update();
   auto numOfRegions = polyDataConnectivityFilter->GetNumberOfExtractedRegions();
-  if (numOfRegions != 2) {
+  if (numOfRegions != GExpectedRegions) {
     vtkWarningMacro(<< "Invalid contour.");
     return nullptr;
   }
-  polyDataConnectivityFilter->AddSpecifiedRegion(1);
-  polyDataConnectivityFilter->SetExtractionMode(VTK_EXTRACT_SPECIFIED_REGIONS);
-  polyDataConnectivityFilter->Update();
-  ClippedClippee->ShallowCopy(polyDataConnectivityFilter->GetOutput());
+
+  vtkNew<vtkPolyData> tmpData[GExpectedRegions];
+  double tmpDataVolume[GExpectedRegions] = {1, 1};
+  for (auto i = 0; i < GExpectedRegions; ++i) {
+    polyDataConnectivityFilter->InitializeSpecifiedRegionList();
+    polyDataConnectivityFilter->AddSpecifiedRegion(i);
+    polyDataConnectivityFilter->SetExtractionMode(
+        VTK_EXTRACT_SPECIFIED_REGIONS);
+    polyDataConnectivityFilter->Update();
+    tmpData[i]->ShallowCopy(polyDataConnectivityFilter->GetOutput());
+  }
+
+  tmpData[0]->GetNumberOfCells() < tmpData[1]->GetNumberOfCells()
+      ? ClippedClippee->ShallowCopy(tmpData[0])
+      : ClippedClippee->ShallowCopy(tmpData[1]);
 
   return ClippedClippee;
 }

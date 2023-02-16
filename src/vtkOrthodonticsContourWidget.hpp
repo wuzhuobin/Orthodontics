@@ -31,15 +31,16 @@ class vtkOrthodonticsContourWidget : public vtkContourWidget {
   static void EndSelectAction(vtkAbstractWidget* widget);
 
  private:
+  vtkOrientedGlyphContourRepresentation*
+  GetOrientedGlyphContourRepresentation();
+
+  static constexpr unsigned short GExpectedRegions = 2;
   using PolygonalSurfacePointPlacerPtr =
       vtkSmartPointer<vtkPolygonalSurfacePointPlacer>;
   PolygonalSurfacePointPlacerPtr PolygonalSurfacePointPlacer;
   vtkPolyData* Clippee = nullptr;
   using PolyDataPtr = vtkSmartPointer<vtkPolyData>;
   PolyDataPtr ClippedClippee;
-
-  vtkOrientedGlyphContourRepresentation*
-  GetOrientedGlyphContourRepresentation();
 };
 
 #endif  //! VTK_ORTHODONTICS_CONTOUR_WIDGET_HPP

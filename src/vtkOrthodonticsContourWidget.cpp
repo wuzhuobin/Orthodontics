@@ -63,6 +63,7 @@ void vtkOrthodonticsContourWidget::Initialize(vtkActor* prop,
   if (points == nullptr || points->GetNumberOfPoints() < 3) {
     return;
   }
+  InitializationPoints = points;
 
   ///@{
   // Find the largest cell.
@@ -89,8 +90,9 @@ void vtkOrthodonticsContourWidget::Initialize(vtkActor* prop,
   ///@{
   // Reorder the points.
   auto* newCell = cellWithMostPoints->NewInstance();
-  points->Reset();
-  points->Allocate();
+  vtkNew<vtkPolyData> newPolyData;
+  newPolyData->Reset();
+  newPolyData->Allocate();
   vtkNew<vtkPoints> newPoints;
   vtkNew<vtkIdList> newIdList;
   for (auto cpid = 0; cpid < cellWithMostPoints->GetNumberOfPoints(); ++cpid) {
@@ -102,12 +104,12 @@ void vtkOrthodonticsContourWidget::Initialize(vtkActor* prop,
     auto foundPointId = Clippee->FindPoint(point);
     newIdList->InsertNextId(foundPointId);
   }
-  points->InsertNextCell(newCell->GetCellType(), newCell->GetPointIds());
+  newPolyData->InsertNextCell(newCell->GetCellType(), newCell->GetPointIds());
   newCell->Delete();
-  points->SetPoints(newPoints);
+  newPolyData->SetPoints(newPoints);
   ///@}
 
-  vtkContourWidget::Initialize(points, 1, newIdList);
+  vtkContourWidget::Initialize(newPolyData, 1, newIdList);
   CloseLoop();
 }
 
@@ -119,6 +121,7 @@ vtkPolyData* vtkOrthodonticsContourWidget::Clip() {
 
   auto contour = GetOrientedGlyphContourRepresentation()
                      ->GetContourRepresentationAsPolyData();
+  ///< @todo Test only.
   if (contour == nullptr) {
     vtkWarningMacro(<< "Contour is not valid.");
     return nullptr;
@@ -145,7 +148,7 @@ vtkPolyData* vtkOrthodonticsContourWidget::Clip() {
     vtkIdType* cells;
     clippee->GetPointCells(toBeRemovedPointId, nCells, cells);
     for (auto cid = 0; cid < nCells; cid++) {
-      toBeRemovedCellIds->InsertUniqueId(cells[cid]);
+      toBeRemovedCellIds->InsertNextId(cells[cid]);
     }
   }
   auto clippeePoints = clippee->GetPoints();
@@ -174,27 +177,31 @@ vtkPolyData* vtkOrthodonticsContourWidget::Clip() {
   polyDataConnectivityFilter->SetInputConnection(
       cleanPolyData->GetOutputPort());
   polyDataConnectivityFilter->SetExtractionMode(VTK_EXTRACT_ALL_REGIONS);
+  polyDataConnectivityFilter->SetScalarConnectivity(true);
   polyDataConnectivityFilter->Update();
   auto numOfRegions = polyDataConnectivityFilter->GetNumberOfExtractedRegions();
-  if (numOfRegions != GExpectedRegions) {
-    vtkWarningMacro(<< "Invalid contour.");
+
+  if (numOfRegions < 2) {
+    vtkErrorMacro(<< "Invalid contour.");
     return nullptr;
   }
 
-  vtkNew<vtkPolyData> tmpData[GExpectedRegions];
-  double tmpDataVolume[GExpectedRegions] = {1, 1};
-  for (auto i = 0; i < GExpectedRegions; ++i) {
+  std::vector<vtkSmartPointer<vtkPolyData>> tmpData;
+  for (auto i = 0; i < numOfRegions; ++i) {
     polyDataConnectivityFilter->InitializeSpecifiedRegionList();
     polyDataConnectivityFilter->AddSpecifiedRegion(i);
     polyDataConnectivityFilter->SetExtractionMode(
         VTK_EXTRACT_SPECIFIED_REGIONS);
     polyDataConnectivityFilter->Update();
+    tmpData.push_back(vtkSmartPointer<vtkPolyData>::New());
     tmpData[i]->ShallowCopy(polyDataConnectivityFilter->GetOutput());
   }
+  std::sort(tmpData.begin(), tmpData.end(), [](auto a, auto b) {
+    return a->GetNumberOfCells() > b->GetNumberOfCells();
+  });
 
-  tmpData[0]->GetNumberOfCells() < tmpData[1]->GetNumberOfCells()
-      ? ClippedClippee->ShallowCopy(tmpData[0])
-      : ClippedClippee->ShallowCopy(tmpData[1]);
+  // Get the second largest region.
+  ClippedClippee->ShallowCopy(tmpData[1]);
 
   return ClippedClippee;
 }

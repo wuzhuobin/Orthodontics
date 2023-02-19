@@ -33,6 +33,11 @@ int main(int argc, char *argv[]) {
   const auto *lowerClippedPath = "C:/ccode/Orthodontics/data/DataClipped.vtk";
   view.addPolyData(lowerClippedPath);
   view.getProp("DataClipped")->SetVisibility(false);
+  for (auto i = 0; i < 14; ++i) {
+    view.addPolyData("C:/ccode/Orthodontics/data/Tooth" + QString::number(i) +
+                     ".vtk");
+    view.getProp("Tooth" + QString::number(i))->SetVisibility(false);
+  }
   ///@}
   view.show();
   view.resize(1024, 1024);

@@ -39,6 +39,7 @@ class vtkOrthodonticsContourWidget : public vtkContourWidget {
       vtkSmartPointer<vtkPolygonalSurfacePointPlacer>;
   PolygonalSurfacePointPlacerPtr PolygonalSurfacePointPlacer;
   vtkPolyData* Clippee = nullptr;
+  vtkPolyData* InitializationPoints = nullptr;
   using PolyDataPtr = vtkSmartPointer<vtkPolyData>;
   PolyDataPtr ClippedClippee;
 };

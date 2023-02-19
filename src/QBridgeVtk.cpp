@@ -38,6 +38,7 @@ QBridgeVtk::QBridgeVtk(QOrthodonticsViewWidget& viewWidget,
 void QBridgeVtk::setupConnection() {
   setupImplicitPlaneControllerWidget();
   setupOrthodonticsContourControllerWidget();
+  setupOrthodonticsFillHoles();
 
   connect(mWidget.pushButtonSave, &QPushButton::clicked, [this]() {
     QOrthodonticsWidget* parent = static_cast<QOrthodonticsWidget*>(sender());
@@ -232,6 +233,40 @@ void QBridgeVtk::setupOrthodonticsContourControllerWidget() {
                 mViewWidget.addPolyData("Tooth" + QString::number(i), clipped);
               }
               enableInteractorObserver(contourWidget, false);
+            }
+            mViewWidget.renderWindow()->Render();
+          });
+}
+
+void QBridgeVtk::setupOrthodonticsFillHoles() {
+  connect(mWidget.pushButtonFillHoles, &QPushButton::toggled,
+          [this](auto checked) {
+            mFillHolsController.setVisible(checked);
+            auto* dataProp3D = mViewWidget.getProp("Data");
+            dataProp3D->SetVisibility(false);
+            auto* dataClippedProp3D = mViewWidget.getProp("DataClipped");
+            dataClippedProp3D->SetVisibility(!checked);
+            for (auto i = 0; i < GNumberOfTeeth; i++) {
+              if (auto toothProp =
+                      mViewWidget.getProp("Tooth" + QString::number(i));
+                  toothProp != nullptr) {
+                toothProp->SetVisibility(checked);
+              }
+            }
+            mViewWidget.renderWindow()->Render();
+          });
+  connect(mFillHolsController.pushButtonFillHoles, &QPushButton::clicked,
+          [this](auto checked) {
+            for (auto i = 0; i < GNumberOfTeeth; i++) {
+              if (auto tooth = mViewWidget.getDataSet<vtkPolyData>(
+                      "Tooth" + QString::number(i));
+                  tooth != nullptr) {
+                vtkNew<vtkFillHolesFilter> fillHolesFilter;
+                fillHolesFilter->SetInputData(tooth);
+                fillHolesFilter->SetHoleSize(9999);
+                fillHolesFilter->Update();
+                tooth->ShallowCopy(fillHolesFilter->GetOutput());
+              }
             }
             mViewWidget.renderWindow()->Render();
           });

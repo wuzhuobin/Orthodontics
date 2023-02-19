@@ -13,6 +13,7 @@
 #define Q_BRIDGE_VTK_HPP
 
 #include "QOrthodonticsContourControllerWidget.hpp"
+#include "QOrthodonticsFillHolesControllerWidget.hpp"
 #include "QOrthodonticsImplicitPlaneControllerWidget.hpp"
 #include "QOrthodonticsViewWidget.hpp"
 #include "QOrthodonticsWidget.hpp"
@@ -41,11 +42,13 @@ class QBridgeVtk : public QObject {
   void setupConnection();
   void setupImplicitPlaneControllerWidget();
   void setupOrthodonticsContourControllerWidget();
+  void setupOrthodonticsFillHoles();
   void enableInteractorObserver(vtkInteractorObserver* observer, bool enabled);
 
   static constexpr int GNumberOfTeeth = 32;
   QOrthodonticsImplicitPlaneControllerWidget mImplicitPlaneControllerWidget;
   QOrthodonticsContourControllerWidget mContourControllerWidget;
+  QOrthodonticsFillHolesController mFillHolsController;
   QOrthodonticsViewWidget& mViewWidget;
   QOrthodonticsWidget& mWidget;
 

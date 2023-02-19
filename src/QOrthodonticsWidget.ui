@@ -41,6 +41,19 @@
     </widget>
    </item>
    <item>
+    <widget class="QPushButton" name="pushButtonFillHoles">
+     <property name="text">
+      <string>Setup Fill Holes</string>
+     </property>
+     <property name="checkable">
+      <bool>true</bool>
+     </property>
+     <attribute name="buttonGroup">
+      <string notr="true">buttonGroup</string>
+     </attribute>
+    </widget>
+   </item>
+   <item>
     <spacer name="verticalSpacer">
      <property name="orientation">
       <enum>Qt::Vertical</enum>

@@ -54,6 +54,19 @@
     </widget>
    </item>
    <item>
+    <widget class="QPushButton" name="pushButtonGingivalLine">
+     <property name="text">
+      <string>Setup Gingival Line</string>
+     </property>
+     <property name="checkable">
+      <bool>true</bool>
+     </property>
+     <attribute name="buttonGroup">
+      <string notr="true">buttonGroup</string>
+     </attribute>
+    </widget>
+   </item>
+   <item>
     <spacer name="verticalSpacer">
      <property name="orientation">
       <enum>Qt::Vertical</enum>

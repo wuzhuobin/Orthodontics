@@ -14,6 +14,7 @@
 
 #include "QOrthodonticsContourControllerWidget.hpp"
 #include "QOrthodonticsFillHolesControllerWidget.hpp"
+#include "QOrthodonticsGingivalLineGenerateControllerWidget.hpp"
 #include "QOrthodonticsImplicitPlaneControllerWidget.hpp"
 #include "QOrthodonticsViewWidget.hpp"
 #include "QOrthodonticsWidget.hpp"
@@ -40,15 +41,18 @@ class QBridgeVtk : public QObject {
 
  private:
   void setupConnection();
-  void setupImplicitPlaneControllerWidget();
+  void setupOrthodonticsImplicitPlaneControllerWidget();
   void setupOrthodonticsContourControllerWidget();
   void setupOrthodonticsFillHoles();
+  void setupOrthodonticsGingivalLine();
   void enableInteractorObserver(vtkInteractorObserver* observer, bool enabled);
 
   static constexpr int GNumberOfTeeth = 32;
   QOrthodonticsImplicitPlaneControllerWidget mImplicitPlaneControllerWidget;
   QOrthodonticsContourControllerWidget mContourControllerWidget;
   QOrthodonticsFillHolesController mFillHolsController;
+  QOrthodonticsGingivalLineGenerateControllerWidget
+      mGingivalLineGenerateControllerWidget;
   QOrthodonticsViewWidget& mViewWidget;
   QOrthodonticsWidget& mWidget;
 

@@ -36,9 +36,10 @@ QBridgeVtk::QBridgeVtk(QOrthodonticsViewWidget& viewWidget,
 }
 
 void QBridgeVtk::setupConnection() {
-  setupImplicitPlaneControllerWidget();
+  setupOrthodonticsImplicitPlaneControllerWidget();
   setupOrthodonticsContourControllerWidget();
   setupOrthodonticsFillHoles();
+  setupOrthodonticsGingivalLine();
 
   connect(mWidget.pushButtonSave, &QPushButton::clicked, [this]() {
     QOrthodonticsWidget* parent = static_cast<QOrthodonticsWidget*>(sender());
@@ -61,7 +62,7 @@ void QBridgeVtk::setupConnection() {
   });
 }
 
-void QBridgeVtk::setupImplicitPlaneControllerWidget() {
+void QBridgeVtk::setupOrthodonticsImplicitPlaneControllerWidget() {
   connect(mWidget.pushButtonSetupPlane, &QPushButton::toggled,
           [this](auto checked) {
             mImplicitPlaneControllerWidget.setVisible(checked);
@@ -266,6 +267,26 @@ void QBridgeVtk::setupOrthodonticsFillHoles() {
                 fillHolesFilter->SetHoleSize(9999);
                 fillHolesFilter->Update();
                 tooth->ShallowCopy(fillHolesFilter->GetOutput());
+              }
+            }
+            mViewWidget.renderWindow()->Render();
+          });
+}
+
+void QBridgeVtk::setupOrthodonticsGingivalLine() {
+  connect(mWidget.pushButtonGingivalLine, &QPushButton::toggled,
+          [this](auto checked) {
+            mGingivalLineGenerateControllerWidget.setVisible(checked);
+
+            auto* dataProp3D = mViewWidget.getProp("Data");
+            dataProp3D->SetVisibility(false);
+            auto* dataClippedProp3D = mViewWidget.getProp("DataClipped");
+            dataClippedProp3D->SetVisibility(!checked);
+            for (auto i = 0; i < GNumberOfTeeth; i++) {
+              if (auto toothProp =
+                      mViewWidget.getProp("Tooth" + QString::number(i));
+                  toothProp != nullptr) {
+                toothProp->SetVisibility(checked);
               }
             }
             mViewWidget.renderWindow()->Render();

@@ -291,6 +291,20 @@ void QBridgeVtk::setupOrthodonticsGingivalLine() {
             }
             mViewWidget.renderWindow()->Render();
           });
+
+  connect(mGingivalLineGenerateControllerWidget.pushButtonFACC,
+          &QPushButton::toggled, [this](auto checked) {
+            for (auto i = 0; i < GNumberOfTeeth; i++) {
+              if (auto toothFACCProp =
+                      mViewWidget.getProp("ToothFACC" + QString::number(i));
+                  toothFACCProp != nullptr) {
+                toothFACCProp->SetVisibility(checked);
+              } else if (checked) {
+                // Generate the FACC
+              }
+            }
+            mViewWidget.renderWindow()->Render();
+          });
 }
 
 void QBridgeVtk::enableInteractorObserver(vtkInteractorObserver* observer,

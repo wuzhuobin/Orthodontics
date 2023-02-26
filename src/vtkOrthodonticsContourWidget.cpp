@@ -182,7 +182,7 @@ vtkPolyData* vtkOrthodonticsContourWidget::Clip() {
   auto numOfRegions = polyDataConnectivityFilter->GetNumberOfExtractedRegions();
 
   if (numOfRegions < 2) {
-    vtkErrorMacro(<< "Invalid contour.");
+    vtkWarningMacro(<< "Invalid contour.");
     return nullptr;
   }
 

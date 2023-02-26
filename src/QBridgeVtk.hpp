@@ -21,7 +21,9 @@
 #include "vtkOrthodonticsContourExtractionFilter.hpp"
 #include "vtkOrthodonticsContourGenerateFilter.hpp"
 #include "vtkOrthodonticsContourWidget.hpp"
+#include "vtkOrthodonticsFACCSeedWidget.hpp"
 #include "vtkOrthodonticsImplicitPlaneWidget.hpp"
+#include "vtkOrthodonticsPCAFilter.hpp"
 
 // qt
 #include <QObject>
@@ -61,6 +63,8 @@ class QBridgeVtk : public QObject {
   std::array<vtkNew<vtkOrthodonticsContourExtractionFilter>, GNumberOfTeeth>
       mContourExtractionFilters;
   std::array<vtkNew<vtkOrthodonticsContourWidget>, 32> mContourWidgets;
+  std::array<vtkNew<vtkOrthodonticsPCAFilter>, 32> mPCAFilters;
+  std::array<vtkNew<vtkOrthodonticsFACCSeedWidget>, 32> mFACSeedWidgets;
 };
 
 #endif  //! Q_BRIDGE_VTK_HPP

@@ -301,10 +301,49 @@ void QBridgeVtk::setupOrthodonticsGingivalLine() {
                 toothFACCProp->SetVisibility(checked);
               } else if (checked) {
                 // Generate the FACC
+                if (auto tooth = mViewWidget.getDataSet<vtkPolyData>(
+                        "Tooth" + QString::number(i));
+                    tooth != nullptr) {
+                  mPCAFilters[i]->SetInputData(tooth);
+                  mPCAFilters[i]->Update();
+                  mViewWidget.addPolyData(QString::number(i),
+                                          mPCAFilters[i]->GetOutput());
+                }
               }
             }
             mViewWidget.renderWindow()->Render();
           });
+
+  for (auto side = 0; side < GNumberOfTeeth / 8; side++) {
+    for (auto [i, b] = std::make_tuple(0 + side * 8, 1); i < (side + 1) * 8;
+         i++, b++) {
+      auto faccButton =
+          mGingivalLineGenerateControllerWidget.findChild<QToolButton*>(
+              "toolButtonFACC" + QString::number(side + 1) +
+              QString::number(b));
+      connect(faccButton, &QToolButton::toggled, [this, i](auto checked) {
+        auto& faccSeedWidget = mFACSeedWidgets[i];
+        enableInteractorObserver(faccSeedWidget, checked);
+        if (!checked) {
+          return;
+        }
+        if (auto* toothActor =
+                mViewWidget.getProp<vtkActor>("Tooth" + QString::number(i));
+            toothActor != nullptr) {
+          mFACSeedWidgets[i]->Initialize(toothActor);
+        }
+        // if (faccSeedWidget->GetWidgetState() != vtkContourWidget::Manipulate)
+        // {
+        //   auto* dataClippedActor =
+        //   mViewWidget.getProp<vtkActor>("DataClipped"); auto* dataContour =
+        //   mViewWidget.getDataSet<vtkPolyData>(
+        //       "DataContour" + QString::number(i));
+        //   faccSeedWidget->Initialize(dataClippedActor, dataContour);
+        // }
+        mViewWidget.renderWindow()->Render();
+      });
+    }
+  }
 }
 
 void QBridgeVtk::enableInteractorObserver(vtkInteractorObserver* observer,

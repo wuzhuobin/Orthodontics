@@ -17,6 +17,7 @@
 #include <vtkActor.h>
 #include <vtkClipClosedSurface.h>
 #include <vtkFillHolesFilter.h>
+#include <vtkNamedColors.h>
 #include <vtkPlaneCollection.h>
 #include <vtkPolyData.h>
 #include <vtkPolyDataConnectivityFilter.h>
@@ -28,6 +29,8 @@
 #include <QFileInfo>
 #include <QMessageBox>
 #include <QRegularExpression>
+
+static vtkNew<vtkNamedColors> gColors;
 
 QBridgeVtk::QBridgeVtk(QOrthodonticsViewWidget& viewWidget,
                        QOrthodonticsWidget& widget, QObject* parent)
@@ -139,7 +142,8 @@ void QBridgeVtk::setupOrthodonticsContourControllerWidget() {
 
     auto* draftContoursActor = mViewWidget.getProp<vtkActor>("DraftContours");
     draftContoursActor->GetProperty()->SetRepresentationToWireframe();
-    draftContoursActor->GetProperty()->SetColor(1, 0, 0);
+    draftContoursActor->GetProperty()->SetColor(
+        gColors->GetColor3d("red").GetData());
 
     mViewWidget.renderWindow()->Render();
     mContourControllerWidget.spinBoxNumberOfRegions->setValue(
@@ -192,10 +196,12 @@ void QBridgeVtk::setupOrthodonticsContourControllerWidget() {
           mContourExtractionFilters[i]->Update();
           mViewWidget.addPolyData("DataContour" + QString::number(i),
                                   mContourExtractionFilters[i]->GetOutput());
+
           auto* dataContourActor =
               mViewWidget.getProp<vtkActor>("DataContour" + QString::number(i));
           dataContourActor->GetProperty()->SetRepresentationToWireframe();
-          dataContourActor->GetProperty()->SetColor(1, 0, 0);
+          dataContourActor->GetProperty()->SetColor(
+              gColors->GetColor3d("red").GetData());
         }
         mViewWidget.renderWindow()->Render();
       });

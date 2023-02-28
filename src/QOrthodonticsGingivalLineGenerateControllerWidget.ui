@@ -290,9 +290,9 @@
       </widget>
      </item>
      <item row="2" column="13" colspan="3">
-      <widget class="QPushButton" name="pushButtonDisableAll">
+      <widget class="QPushButton" name="pushButtonReset">
        <property name="text">
-        <string>Disable ALl</string>
+        <string>Reset</string>
        </property>
       </widget>
      </item>

@@ -19,10 +19,14 @@ class vtkPolygonalSurfacePointPlacer;
 
 class vtkOrthodonticsFACCSeedWidget : public vtkSeedWidget {
  public:
+  vtkTypeMacro(vtkOrthodonticsFACCSeedWidget, vtkSeedWidget);
   static vtkOrthodonticsFACCSeedWidget* New();
   virtual void Initialize(vtkActor* prop);
 
  protected:
+  static void AddPointAction(vtkAbstractWidget* widget);
+  // static void MoveAction(vtkAbstractWidget* widget);
+
   vtkOrthodonticsFACCSeedWidget();
   vtkPolygonalSurfacePointPlacer* GetPointPlacer();
 };

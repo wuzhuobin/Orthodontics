@@ -338,14 +338,7 @@ void QBridgeVtk::setupOrthodonticsGingivalLine() {
             toothActor != nullptr) {
           mFACSeedWidgets[i]->Initialize(toothActor);
         }
-        // if (faccSeedWidget->GetWidgetState() != vtkContourWidget::Manipulate)
-        // {
-        //   auto* dataClippedActor =
-        //   mViewWidget.getProp<vtkActor>("DataClipped"); auto* dataContour =
-        //   mViewWidget.getDataSet<vtkPolyData>(
-        //       "DataContour" + QString::number(i));
-        //   faccSeedWidget->Initialize(dataClippedActor, dataContour);
-        // }
+
         mViewWidget.renderWindow()->Render();
       });
     }

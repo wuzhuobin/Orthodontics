@@ -15,20 +15,26 @@
 // vtk
 #include <vtkSeedWidget.h>
 class vtkActor;
+class vtkPolyData;
 class vtkPolygonalSurfacePointPlacer;
 
 class vtkOrthodonticsFACCSeedWidget : public vtkSeedWidget {
- public:
+  public:
   vtkTypeMacro(vtkOrthodonticsFACCSeedWidget, vtkSeedWidget);
   static vtkOrthodonticsFACCSeedWidget* New();
-  virtual void Initialize(vtkActor* prop);
+  virtual void Initialize(vtkActor* prop, vtkPolyData* facc = nullptr);
+
+  virtual void CompleteInteraction() override;
+  virtual void RestartInteraction() override;
 
  protected:
   static void AddPointAction(vtkAbstractWidget* widget);
-  // static void MoveAction(vtkAbstractWidget* widget);
 
   vtkOrthodonticsFACCSeedWidget();
   vtkPolygonalSurfacePointPlacer* GetPointPlacer();
+
+  static constexpr int GMaxNumberOfSeeds = 2;
+  vtkPolyData* Facc = nullptr;
 };
 
 #endif  // ! VTK_ORTHODONTICS_FACCS_SEED_WIDGET_HPP

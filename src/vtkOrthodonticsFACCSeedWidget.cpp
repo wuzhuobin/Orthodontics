@@ -13,13 +13,11 @@
 
 // vtk
 #include <vtkActor.h>
-#include <vtkNamedColors.h>
-#include <vtkObjectFactory.h>
-// #include <vtkPointHandleRepresentation3D.h>
 #include <vtkCallbackCommand.h>
-#include <vtkCellPicker.h>
 #include <vtkCommand.h>
 #include <vtkHandleWidget.h>
+#include <vtkNamedColors.h>
+#include <vtkObjectFactory.h>
 #include <vtkPolygonalSurfacePointPlacer.h>
 #include <vtkProperty.h>
 #include <vtkRenderWindow.h>
@@ -32,13 +30,31 @@
 vtkNew<vtkNamedColors> gColors;
 vtkStandardNewMacro(vtkOrthodonticsFACCSeedWidget);
 
-void vtkOrthodonticsFACCSeedWidget::Initialize(vtkActor* actor) {
+void vtkOrthodonticsFACCSeedWidget::CompleteInteraction() {
+  Superclass::CompleteInteraction();
+  auto point0 = GetSeed(0)->GetHandleRepresentation()->GetWorldPosition();
+  auto point1 = GetSeed(1)->GetHandleRepresentation()->GetWorldPosition();
+}
+
+void vtkOrthodonticsFACCSeedWidget::RestartInteraction() {
+  DeleteSeed(0);
+  DeleteSeed(0);
+  Superclass::RestartInteraction();
+}
+
+void vtkOrthodonticsFACCSeedWidget::Initialize(vtkActor* actor,
+                                               vtkPolyData* facc) {
   if (GetPointPlacer() == nullptr || actor == nullptr) {
     vtkWarningMacro(<< "Invalid point placer or invalid actor.");
     return;
   }
   GetPointPlacer()->RemoveAllProps();
   GetPointPlacer()->AddProp(actor);
+
+  Facc = facc;
+  if (Facc == nullptr) {
+    vtkWarningMacro(<< "Invalid FACC for output.");
+  }
 }
 
 void vtkOrthodonticsFACCSeedWidget::AddPointAction(vtkAbstractWidget* widget) {
@@ -71,12 +87,6 @@ void vtkOrthodonticsFACCSeedWidget::AddPointAction(vtkAbstractWidget* widget) {
           self->GetCurrentRenderer(), e)) {
     return;
   }
-  // if the picker pick nothing, return.
-  auto id = self->GetPointPlacer()->GetCellPicker()->Pick(
-      e[0], e[1], e[2], self->GetCurrentRenderer());
-  if (id <= 0) {
-    return;
-  }
   int currentHandleNumber = rep->CreateHandle(e);
   vtkHandleWidget* currentHandle = self->CreateNewHandle();
   rep->SetSeedDisplayPosition(currentHandleNumber, e);
@@ -87,25 +97,16 @@ void vtkOrthodonticsFACCSeedWidget::AddPointAction(vtkAbstractWidget* widget) {
   self->EventCallbackCommand->SetAbortFlag(1);
   self->Render();
 
-  if (rep->GetNumberOfSeeds() > 1 &&
+  if (rep->GetNumberOfSeeds() >= GMaxNumberOfSeeds &&
       self->WidgetState == vtkSeedWidget::PlacingSeeds) {
     self->CompleteInteraction();
   }
 }
 
-// void vtkOrthodonticsFACCSeedWidget::MoveAction(vtkAbstractWidget* widget) {
-//   auto self = reinterpret_cast<vtkOrthodonticsFACCSeedWidget*>(widget);
-//   self->InvokeEvent(vtkCommand::MouseMoveEvent, nullptr);
-//   self->RequestCursorShape(VTK_CURSOR_DEFAULT);
-// }
-
 vtkOrthodonticsFACCSeedWidget::vtkOrthodonticsFACCSeedWidget() {
   CallbackMapper->SetCallbackMethod(
       vtkCommand::LeftButtonPressEvent, vtkWidgetEvent::AddPoint, this,
       &vtkOrthodonticsFACCSeedWidget::AddPointAction);
-  // CallbackMapper->SetCallbackMethod(vtkCommand::MouseMoveEvent,
-  //                                   vtkWidgetEvent::Move, this,
-  //                                   &vtkOrthodonticsFACCSeedWidget::MoveAction);
 
   CreateDefaultRepresentation();
 

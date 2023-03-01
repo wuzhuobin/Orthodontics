@@ -30,7 +30,28 @@
 #include <QMessageBox>
 #include <QRegularExpression>
 
+// std
+#include <optional>
+
 static vtkNew<vtkNamedColors> gColors;
+
+static std::optional<int> toothIdToToothPosition(int id) {
+  if (id < 0 || id >= 32) {
+    return std::nullopt;
+  }
+  auto side = id / 8 + 1;
+  auto index = id % 8 + 1;
+  return side + index;
+}
+
+static std::optional<int> toothPositionToToothId(int position) {
+  auto side = position / 10;
+  auto index = position % 10;
+  if (side < 1 || side > 4 || index < 1 || index > 8) {
+    return std::nullopt;
+  }
+  return (side - 1) * 8 + index;
+}
 
 QBridgeVtk::QBridgeVtk(QOrthodonticsViewWidget& viewWidget,
                        QOrthodonticsWidget& widget, QObject* parent)
@@ -343,6 +364,24 @@ void QBridgeVtk::setupOrthodonticsGingivalLine() {
       });
     }
   }
+
+  for (auto i = 0; i < GNumberOfTeeth; ++i) {
+    std::cerr << ("toolButtonFACC" +
+                  QString::number(*toothIdToToothPosition(i)))
+                     .toStdString()
+              << '\n';
+    auto faccButton =
+        mGingivalLineGenerateControllerWidget.findChild<QToolButton*>(
+            "toolButtonFACC" + QString::number(*toothIdToToothPosition(i)));
+    std::cerr << faccButton->text().toStdString() << '\n';
+  }
+
+  connect(mGingivalLineGenerateControllerWidget.pushButtonReset,
+          &QPushButton::clicked, [this]() {
+            auto* checkedButton = mGingivalLineGenerateControllerWidget
+                                      .buttonGroupFACC->checkedButton();
+            checkedButton->text().toInt();
+          });
 }
 
 void QBridgeVtk::enableInteractorObserver(vtkInteractorObserver* observer,

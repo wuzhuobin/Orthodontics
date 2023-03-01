@@ -17,6 +17,7 @@
 #include <vtkObjectFactory.h>
 // #include <vtkPointHandleRepresentation3D.h>
 #include <vtkCallbackCommand.h>
+#include <vtkCellPicker.h>
 #include <vtkCommand.h>
 #include <vtkHandleWidget.h>
 #include <vtkPolygonalSurfacePointPlacer.h>
@@ -68,6 +69,12 @@ void vtkOrthodonticsFACCSeedWidget::AddPointAction(vtkAbstractWidget* widget) {
   // the position follows the constraint.
   if (!rep->GetHandleRepresentation()->CheckConstraint(
           self->GetCurrentRenderer(), e)) {
+    return;
+  }
+  // if the picker pick nothing, return.
+  auto id = self->GetPointPlacer()->GetCellPicker()->Pick(
+      e[0], e[1], e[2], self->GetCurrentRenderer());
+  if (id <= 0) {
     return;
   }
   int currentHandleNumber = rep->CreateHandle(e);

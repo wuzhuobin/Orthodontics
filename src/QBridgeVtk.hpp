@@ -64,7 +64,7 @@ class QBridgeVtk : public QObject {
       mContourExtractionFilters;
   std::array<vtkNew<vtkOrthodonticsContourWidget>, 32> mContourWidgets;
   std::array<vtkNew<vtkOrthodonticsPCAFilter>, 32> mPCAFilters;
-  std::array<vtkNew<vtkOrthodonticsFACCSeedWidget>, 32> mFACSeedWidgets;
+  std::array<vtkNew<vtkOrthodonticsFACCSeedWidget>, 32> mFACCSeedWidgets;
 };
 
 #endif  //! Q_BRIDGE_VTK_HPP

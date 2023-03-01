@@ -39,7 +39,7 @@ static std::optional<int> toothIdToToothPosition(int id) {
   if (id < 0 || id >= 32) {
     return std::nullopt;
   }
-  auto side = id / 8 + 1;
+  auto side = (id / 8 + 1) * 10;
   auto index = id % 8 + 1;
   return side + index;
 }
@@ -50,7 +50,7 @@ static std::optional<int> toothPositionToToothId(int position) {
   if (side < 1 || side > 4 || index < 1 || index > 8) {
     return std::nullopt;
   }
-  return (side - 1) * 8 + index;
+  return (side - 1) * 8 + index - 1;
 }
 
 QBridgeVtk::QBridgeVtk(QOrthodonticsViewWidget& viewWidget,
@@ -227,26 +227,24 @@ void QBridgeVtk::setupOrthodonticsContourControllerWidget() {
         mViewWidget.renderWindow()->Render();
       });
 
-  for (auto side = 0; side < GNumberOfTeeth / 8; side++) {
-    for (auto [i, b] = std::make_tuple(0 + side * 8, 1); i < (side + 1) * 8;
-         i++, b++) {
-      auto contourButton = mContourControllerWidget.findChild<QToolButton*>(
-          "toolButtonContour" + QString::number(side + 1) + QString::number(b));
-      connect(contourButton, &QToolButton::toggled, [this, i](auto checked) {
-        auto& contourWidget = mContourWidgets[i];
-        enableInteractorObserver(contourWidget, checked);
-        if (!checked) {
-          return;
-        }
-        if (contourWidget->GetWidgetState() != vtkContourWidget::Manipulate) {
-          auto* dataClippedActor = mViewWidget.getProp<vtkActor>("DataClipped");
-          auto* dataContour = mViewWidget.getDataSet<vtkPolyData>(
-              "DataContour" + QString::number(i));
-          contourWidget->Initialize(dataClippedActor, dataContour);
-        }
-        mViewWidget.renderWindow()->Render();
-      });
-    }
+  for (auto i = 0; i < GNumberOfTeeth; ++i) {
+    auto contourButton = mContourControllerWidget.findChild<QToolButton*>(
+        "toolButtonContour" + QString::number(*toothIdToToothPosition(i)));
+
+    connect(contourButton, &QToolButton::toggled, [this, i](auto checked) {
+      auto& contourWidget = mContourWidgets[i];
+      enableInteractorObserver(contourWidget, checked);
+      if (!checked) {
+        return;
+      }
+      if (contourWidget->GetWidgetState() != vtkContourWidget::Manipulate) {
+        auto* dataClippedActor = mViewWidget.getProp<vtkActor>("DataClipped");
+        auto* dataContour = mViewWidget.getDataSet<vtkPolyData>(
+            "DataContour" + QString::number(i));
+        contourWidget->Initialize(dataClippedActor, dataContour);
+      }
+      mViewWidget.renderWindow()->Render();
+    });
   }
 
   connect(mContourControllerWidget.pushButtonClip, &QPushButton::clicked,
@@ -333,7 +331,7 @@ void QBridgeVtk::setupOrthodonticsGingivalLine() {
                     tooth != nullptr) {
                   mPCAFilters[i]->SetInputData(tooth);
                   mPCAFilters[i]->Update();
-                  mViewWidget.addPolyData(QString::number(i),
+                  mViewWidget.addPolyData("ToothFACC" + QString::number(i),
                                           mPCAFilters[i]->GetOutput());
                 }
               }
@@ -341,46 +339,48 @@ void QBridgeVtk::setupOrthodonticsGingivalLine() {
             mViewWidget.renderWindow()->Render();
           });
 
-  for (auto side = 0; side < GNumberOfTeeth / 8; side++) {
-    for (auto [i, b] = std::make_tuple(0 + side * 8, 1); i < (side + 1) * 8;
-         i++, b++) {
-      auto faccButton =
-          mGingivalLineGenerateControllerWidget.findChild<QToolButton*>(
-              "toolButtonFACC" + QString::number(side + 1) +
-              QString::number(b));
-      connect(faccButton, &QToolButton::toggled, [this, i](auto checked) {
-        auto& faccSeedWidget = mFACSeedWidgets[i];
-        enableInteractorObserver(faccSeedWidget, checked);
-        if (!checked) {
-          return;
-        }
-        if (auto* toothActor =
-                mViewWidget.getProp<vtkActor>("Tooth" + QString::number(i));
-            toothActor != nullptr) {
-          mFACSeedWidgets[i]->Initialize(toothActor);
-        }
-
-        mViewWidget.renderWindow()->Render();
-      });
-    }
-  }
-
   for (auto i = 0; i < GNumberOfTeeth; ++i) {
-    std::cerr << ("toolButtonFACC" +
-                  QString::number(*toothIdToToothPosition(i)))
-                     .toStdString()
-              << '\n';
     auto faccButton =
         mGingivalLineGenerateControllerWidget.findChild<QToolButton*>(
             "toolButtonFACC" + QString::number(*toothIdToToothPosition(i)));
-    std::cerr << faccButton->text().toStdString() << '\n';
+
+    connect(faccButton, &QToolButton::toggled, [this, i](auto checked) {
+      auto& faccSeedWidget = mFACCSeedWidgets[i];
+      enableInteractorObserver(faccSeedWidget, checked);
+      if (!checked) {
+        return;
+      }
+      if (auto* toothActor =
+              mViewWidget.getProp<vtkActor>("Tooth" + QString::number(i));
+          toothActor != nullptr) {
+        auto toothFACC = mViewWidget.getDataSet<vtkPolyData>(
+            "ToothFACC" + QString::number(i));
+        if (toothFACC == nullptr) {
+          mViewWidget.addPolyData("ToothFACC" + QString::number(i),
+                                  vtkNew<vtkPolyData>());
+          toothFACC = mViewWidget.getDataSet<vtkPolyData>("ToothFACC" +
+                                                          QString::number(i));
+        }
+        faccSeedWidget->Initialize(toothActor, toothFACC);
+      }
+
+      mViewWidget.renderWindow()->Render();
+    });
   }
 
   connect(mGingivalLineGenerateControllerWidget.pushButtonReset,
           &QPushButton::clicked, [this]() {
             auto* checkedButton = mGingivalLineGenerateControllerWidget
                                       .buttonGroupFACC->checkedButton();
-            checkedButton->text().toInt();
+            if (checkedButton == nullptr) {
+              return;
+            }
+
+            auto position = checkedButton->text().toInt();
+            auto id = toothPositionToToothId(position);
+
+            mFACCSeedWidgets[*id]->RestartInteraction();
+            mViewWidget.renderWindow()->Render();
           });
 }
 

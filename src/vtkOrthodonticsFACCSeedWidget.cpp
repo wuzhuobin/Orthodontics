@@ -13,6 +13,7 @@
 
 // vtk
 #include <vtkActor.h>
+#include <vtkArrowSource.h>
 #include <vtkCallbackCommand.h>
 #include <vtkCommand.h>
 #include <vtkHandleWidget.h>
@@ -32,13 +33,25 @@ vtkStandardNewMacro(vtkOrthodonticsFACCSeedWidget);
 
 void vtkOrthodonticsFACCSeedWidget::CompleteInteraction() {
   Superclass::CompleteInteraction();
-  auto point0 = GetSeed(0)->GetHandleRepresentation()->GetWorldPosition();
-  auto point1 = GetSeed(1)->GetHandleRepresentation()->GetWorldPosition();
+  auto seed0 = GetSeed(0);
+  auto seed1 = GetSeed(1);
+  if (seed0 == nullptr || seed1 == nullptr) {
+    vtkErrorMacro(<< "At least 2 seeds are required.");
+    return;
+  }
+  auto point0 = seed0->GetHandleRepresentation()->GetWorldPosition();
+  auto point1 = seed1->GetHandleRepresentation()->GetWorldPosition();
+
+  vtkNew<vtkArrowSource> arrowSource;
+  arrowSource->Update();
+  Facc->ShallowCopy(arrowSource->GetOutput());
+
+  for (auto seed = GetSeed(0); seed != nullptr; seed = GetSeed(0)) {
+    DeleteSeed(0);
+  }
 }
 
 void vtkOrthodonticsFACCSeedWidget::RestartInteraction() {
-  DeleteSeed(0);
-  DeleteSeed(0);
   Superclass::RestartInteraction();
 }
 

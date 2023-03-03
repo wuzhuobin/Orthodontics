@@ -17,14 +17,17 @@
 #include <vtkCallbackCommand.h>
 #include <vtkCommand.h>
 #include <vtkHandleWidget.h>
+#include <vtkMapper.h>
 #include <vtkNamedColors.h>
 #include <vtkObjectFactory.h>
+#include <vtkPolyData.h>
 #include <vtkPolygonalSurfacePointPlacer.h>
 #include <vtkProperty.h>
 #include <vtkRenderWindow.h>
 #include <vtkRenderWindowInteractor.h>
 #include <vtkSeedRepresentation.h>
 #include <vtkSphereHandleRepresentation.h>
+#include <vtkTransform.h>
 #include <vtkWidgetCallbackMapper.h>
 #include <vtkWidgetEvent.h>
 
@@ -41,6 +44,19 @@ void vtkOrthodonticsFACCSeedWidget::CompleteInteraction() {
   }
   auto point0 = seed0->GetHandleRepresentation()->GetWorldPosition();
   auto point1 = seed1->GetHandleRepresentation()->GetWorldPosition();
+
+  std::array targetVector = {point1[0] - point0[0], point1[1] - point0[1],
+                             point1[2] - point0[2]};
+  std::array arrowVector = {1.0, 0.0, 0.0};
+  std::array<double, 3> axis;
+
+  auto angle =
+      vtkMath::AngleBetweenVectors(targetVector.data(), arrowVector.data());
+  vtkMath::Cross(targetVector.data(), arrowVector.data(), axis.data());
+
+  vtkNew<vtkTransform> transform;
+  transform->RotateWXYZ(angle, axis.data());
+  // transform->Translate();
 
   vtkNew<vtkArrowSource> arrowSource;
   arrowSource->Update();
@@ -64,7 +80,7 @@ void vtkOrthodonticsFACCSeedWidget::Initialize(vtkActor* actor,
   GetPointPlacer()->RemoveAllProps();
   GetPointPlacer()->AddProp(actor);
 
-  Facc = facc;
+  if (actor->GetMapper()->Get) Facc = facc;
   if (Facc == nullptr) {
     vtkWarningMacro(<< "Invalid FACC for output.");
   }

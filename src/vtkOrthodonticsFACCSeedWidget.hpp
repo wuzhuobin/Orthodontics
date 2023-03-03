@@ -34,6 +34,7 @@ class vtkOrthodonticsFACCSeedWidget : public vtkSeedWidget {
   vtkPolygonalSurfacePointPlacer* GetPointPlacer();
 
   static constexpr int GMaxNumberOfSeeds = 2;
+  vtkPolyData *Teeth = nullptr;
   vtkPolyData* Facc = nullptr;
 };
 

@@ -19,7 +19,7 @@ class vtkPolyData;
 class vtkPolygonalSurfacePointPlacer;
 
 class vtkOrthodonticsFACCSeedWidget : public vtkSeedWidget {
-  public:
+ public:
   vtkTypeMacro(vtkOrthodonticsFACCSeedWidget, vtkSeedWidget);
   static vtkOrthodonticsFACCSeedWidget* New();
   virtual void Initialize(vtkActor* prop, vtkPolyData* facc = nullptr);
@@ -34,7 +34,7 @@ class vtkOrthodonticsFACCSeedWidget : public vtkSeedWidget {
   vtkPolygonalSurfacePointPlacer* GetPointPlacer();
 
   static constexpr int GMaxNumberOfSeeds = 2;
-  vtkPolyData *Teeth = nullptr;
+  vtkPolyData* Tooth = nullptr;
   vtkPolyData* Facc = nullptr;
 };
 

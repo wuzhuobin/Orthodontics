@@ -15,6 +15,7 @@
 #include <vtkActor.h>
 #include <vtkArrowSource.h>
 #include <vtkCallbackCommand.h>
+#include <vtkCellPicker.h>
 #include <vtkCommand.h>
 #include <vtkHandleWidget.h>
 #include <vtkMapper.h>
@@ -28,6 +29,7 @@
 #include <vtkSeedRepresentation.h>
 #include <vtkSphereHandleRepresentation.h>
 #include <vtkTransform.h>
+#include <vtkTransformPolyDataFilter.h>
 #include <vtkWidgetCallbackMapper.h>
 #include <vtkWidgetEvent.h>
 
@@ -42,25 +44,36 @@ void vtkOrthodonticsFACCSeedWidget::CompleteInteraction() {
     vtkErrorMacro(<< "At least 2 seeds are required.");
     return;
   }
-  auto point0 = seed0->GetHandleRepresentation()->GetWorldPosition();
-  auto point1 = seed1->GetHandleRepresentation()->GetWorldPosition();
-
-  std::array targetVector = {point1[0] - point0[0], point1[1] - point0[1],
-                             point1[2] - point0[2]};
-  std::array arrowVector = {1.0, 0.0, 0.0};
-  std::array<double, 3> axis;
-
-  auto angle =
-      vtkMath::AngleBetweenVectors(targetVector.data(), arrowVector.data());
-  vtkMath::Cross(targetVector.data(), arrowVector.data(), axis.data());
-
-  vtkNew<vtkTransform> transform;
-  transform->RotateWXYZ(angle, axis.data());
-  // transform->Translate();
 
   vtkNew<vtkArrowSource> arrowSource;
   arrowSource->Update();
   Facc->ShallowCopy(arrowSource->GetOutput());
+
+  auto center = Tooth->GetCenter();
+
+  auto point0 = seed0->GetHandleRepresentation()->GetWorldPosition();
+  auto point1 = seed1->GetHandleRepresentation()->GetWorldPosition();
+
+  std::array controlPoints = {point1[0] - point0[0], point1[1] - point0[1],
+                              point1[2] - point0[2]};
+  std::array arrow = {1.0, 0.0, 0.0};
+  std::array<double, 3> axis;
+  auto angle = vtkMath::DegreesFromRadians(
+      vtkMath::AngleBetweenVectors(arrow.data(), controlPoints.data()));
+  vtkMath::Cross(arrow.data(), controlPoints.data(), axis.data());
+
+  vtkNew<vtkTransform> transform;
+  transform->PostMultiply();
+  transform->Scale(10, 10, 10);
+  transform->RotateWXYZ(angle, axis.data());
+  transform->Translate(center);
+
+  vtkNew<vtkTransformPolyDataFilter> transformPolyDataFilter;
+  transformPolyDataFilter->SetInputData(arrowSource->GetOutput());
+  transformPolyDataFilter->SetTransform(transform);
+  transformPolyDataFilter->Update();
+
+  Facc->ShallowCopy(transformPolyDataFilter->GetOutput());
 
   for (auto seed = GetSeed(0); seed != nullptr; seed = GetSeed(0)) {
     DeleteSeed(0);
@@ -80,9 +93,16 @@ void vtkOrthodonticsFACCSeedWidget::Initialize(vtkActor* actor,
   GetPointPlacer()->RemoveAllProps();
   GetPointPlacer()->AddProp(actor);
 
-  if (actor->GetMapper()->Get) Facc = facc;
+  if (Tooth = vtkPolyData::SafeDownCast(actor->GetMapper()->GetInput());
+      Tooth == nullptr) {
+    vtkWarningMacro("Invalid tooth.");
+    return;
+  }
+
+  Facc = facc;
   if (Facc == nullptr) {
     vtkWarningMacro(<< "Invalid FACC for output.");
+    return;
   }
 }
 
@@ -116,6 +136,12 @@ void vtkOrthodonticsFACCSeedWidget::AddPointAction(vtkAbstractWidget* widget) {
           self->GetCurrentRenderer(), e)) {
     return;
   }
+
+  if (!self->GetPointPlacer()->GetCellPicker()->Pick(
+          e[0], e[1], e[2], self->GetCurrentRenderer())) {
+    return;
+  }
+
   int currentHandleNumber = rep->CreateHandle(e);
   vtkHandleWidget* currentHandle = self->CreateNewHandle();
   rep->SetSeedDisplayPosition(currentHandleNumber, e);

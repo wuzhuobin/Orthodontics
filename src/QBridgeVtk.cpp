@@ -360,6 +360,10 @@ void QBridgeVtk::setupOrthodonticsGingivalLine() {
                                   vtkNew<vtkPolyData>());
           toothFACC = mViewWidget.getDataSet<vtkPolyData>("ToothFACC" +
                                                           QString::number(i));
+          auto toothFACCActor =
+              mViewWidget.getProp<vtkActor>("ToothFACC" + QString::number(i));
+          toothFACCActor->GetProperty()->SetColor(
+              gColors->GetColor3d("red").GetData());
         }
         faccSeedWidget->Initialize(toothActor, toothFACC);
       }

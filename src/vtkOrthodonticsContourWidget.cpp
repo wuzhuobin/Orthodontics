@@ -65,7 +65,8 @@ void vtkOrthodonticsContourWidget::Initialize(vtkActor* prop,
 
   vtkNew<vtkDecimatePolylineFilter> decimatePolylineFilter;
   decimatePolylineFilter->SetInputConnection(stripper->GetOutputPort());
-  decimatePolylineFilter->SetTargetReduction(0.90);
+  // Make a great reduction to have nicer contour.
+  decimatePolylineFilter->SetTargetReduction(0.98);
   decimatePolylineFilter->Update();
   auto intermediate = decimatePolylineFilter->GetOutput();
 

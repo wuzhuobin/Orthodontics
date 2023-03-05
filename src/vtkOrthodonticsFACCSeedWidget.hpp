@@ -22,6 +22,7 @@ class vtkOrthodonticsFACCSeedWidget : public vtkSeedWidget {
  public:
   vtkTypeMacro(vtkOrthodonticsFACCSeedWidget, vtkSeedWidget);
   static vtkOrthodonticsFACCSeedWidget* New();
+  void SetEnabled(int enabled) override;
   virtual void Initialize(vtkActor* prop, vtkPolyData* facc = nullptr);
 
   virtual void CompleteInteraction() override;

@@ -36,14 +36,26 @@
 vtkNew<vtkNamedColors> gColors;
 vtkStandardNewMacro(vtkOrthodonticsFACCSeedWidget);
 
+void vtkOrthodonticsFACCSeedWidget::SetEnabled(int enabled) {
+  vtkAbstractWidget::SetEnabled(enabled);
+
+  if (!enabled) {
+    this->RequestCursorShape(VTK_CURSOR_DEFAULT);
+    this->WidgetState = vtkSeedWidget::Start;
+  }
+
+  this->Render();
+}
+
 void vtkOrthodonticsFACCSeedWidget::CompleteInteraction() {
-  Superclass::CompleteInteraction();
   auto seed0 = GetSeed(0);
   auto seed1 = GetSeed(1);
   if (seed0 == nullptr || seed1 == nullptr) {
     vtkErrorMacro(<< "At least 2 seeds are required.");
     return;
   }
+  seed0->SetEnabled(false);
+  seed1->SetEnabled(false);
 
   vtkNew<vtkArrowSource> arrowSource;
   arrowSource->Update();
@@ -75,12 +87,17 @@ void vtkOrthodonticsFACCSeedWidget::CompleteInteraction() {
 
   Facc->ShallowCopy(transformPolyDataFilter->GetOutput());
 
-  for (auto seed = GetSeed(0); seed != nullptr; seed = GetSeed(0)) {
-    DeleteSeed(0);
-  }
+  Superclass::CompleteInteraction();
 }
 
 void vtkOrthodonticsFACCSeedWidget::RestartInteraction() {
+  vtkNew<vtkPolyData> newFacc;
+  Facc->ShallowCopy(newFacc);
+
+  for (auto seed = GetSeed(0); seed != nullptr; seed = GetSeed(0)) {
+    DeleteSeed(0);
+  }
+
   Superclass::RestartInteraction();
 }
 
@@ -107,7 +124,6 @@ void vtkOrthodonticsFACCSeedWidget::Initialize(vtkActor* actor,
 }
 
 void vtkOrthodonticsFACCSeedWidget::AddPointAction(vtkAbstractWidget* widget) {
-  // Superclass::AddPointAction(widget);
   auto self = reinterpret_cast<vtkOrthodonticsFACCSeedWidget*>(widget);
   auto rep = self->GetSeedRepresentation();
 
@@ -117,7 +133,8 @@ void vtkOrthodonticsFACCSeedWidget::AddPointAction(vtkAbstractWidget* widget) {
 
   // When a seed is placed, a new handle widget must be created and enabled.
   auto state = self->WidgetRep->ComputeInteractionState(X, Y);
-  if (self->WidgetState == vtkSeedWidget::PlacedSeeds) {
+  // Not allow to move seeds.
+  if (state == vtkSeedRepresentation::NearSeed) {
     return;
   }
 
@@ -137,6 +154,7 @@ void vtkOrthodonticsFACCSeedWidget::AddPointAction(vtkAbstractWidget* widget) {
     return;
   }
 
+  // Only add a seed when a cell is picked.
   if (!self->GetPointPlacer()->GetCellPicker()->Pick(
           e[0], e[1], e[2], self->GetCurrentRenderer())) {
     return;
@@ -152,6 +170,7 @@ void vtkOrthodonticsFACCSeedWidget::AddPointAction(vtkAbstractWidget* widget) {
   self->EventCallbackCommand->SetAbortFlag(1);
   self->Render();
 
+  // Complete interaction when there are 2 seeds.
   if (rep->GetNumberOfSeeds() >= GMaxNumberOfSeeds &&
       self->WidgetState == vtkSeedWidget::PlacingSeeds) {
     self->CompleteInteraction();

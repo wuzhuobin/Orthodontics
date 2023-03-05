@@ -21,7 +21,6 @@
 #include <vtkPoints.h>
 #include <vtkPolyDataCollection.h>
 #include <vtkPolyDataConnectivityFilter.h>
-#include <vtkPolyDataNormals.h>
 #include <vtkPolygonalSurfaceContourLineInterpolator.h>
 #include <vtkPolygonalSurfacePointPlacer.h>
 #include <vtkProperty.h>
@@ -50,13 +49,6 @@ void vtkOrthodonticsContourWidget::Initialize(vtkActor* prop,
     return;
   }
 
-  vtkNew<vtkPolyDataNormals> polyDataNormals;
-  polyDataNormals->SetInputData(Clippee);
-  polyDataNormals->SetComputeCellNormals(true);
-  polyDataNormals->SetComputePointNormals(true);
-  polyDataNormals->Update();
-  Clippee->ShallowCopy(polyDataNormals->GetOutput());
-
   // For initialization.
   PolygonalSurfacePointPlacer->GetPolys()->AddItem(Clippee);
 
@@ -73,7 +65,7 @@ void vtkOrthodonticsContourWidget::Initialize(vtkActor* prop,
 
   vtkNew<vtkDecimatePolylineFilter> decimatePolylineFilter;
   decimatePolylineFilter->SetInputConnection(stripper->GetOutputPort());
-  decimatePolylineFilter->SetTargetReduction(0.95);
+  decimatePolylineFilter->SetTargetReduction(0.90);
   decimatePolylineFilter->Update();
   auto intermediate = decimatePolylineFilter->GetOutput();
 
@@ -177,7 +169,7 @@ vtkPolyData* vtkOrthodonticsContourWidget::Clip() {
   polyDataConnectivityFilter->SetInputConnection(
       cleanPolyData->GetOutputPort());
   polyDataConnectivityFilter->SetExtractionMode(VTK_EXTRACT_ALL_REGIONS);
-  polyDataConnectivityFilter->SetScalarConnectivity(true);
+  // polyDataConnectivityFilter->SetScalarConnectivity(true);
   polyDataConnectivityFilter->Update();
   auto numOfRegions = polyDataConnectivityFilter->GetNumberOfExtractedRegions();
 
